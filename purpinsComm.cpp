@@ -48,8 +48,8 @@ purpinsComm::purpinsComm(SerialAbstract * _serial):serial(_serial)
 {
 	serial_port_status = AWATING_DATA;
 	debug = 0;  // By default debug is OFF
-	/*id=-1;
-    serial_buffer_size=SERIAL_BUFFER_SIZE;*/
+	id=-1;
+    serial_buffer_size=SERIAL_BUFFER_SIZE;
 }
 
 int purpinsComm::getMsg(int * argv)

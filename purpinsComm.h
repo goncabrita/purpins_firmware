@@ -35,6 +35,11 @@
 * Author: Gonçalo Cabrita, Bruno Antunes and Bruno Gouveia on 13/08/2012
 *********************************************************************/
 
+#ifndef __PURPINSCOMM
+#define __PURPINSCOMM
+
+#include <stdint.h>
+
 extern unsigned long millis ();
 class SerialAbstract;
 
@@ -149,5 +154,6 @@ class purpinsComm
     SerialAbstract * serial;
 };
 
+#endif //__PURPINSCOMM
 // EOF
 
