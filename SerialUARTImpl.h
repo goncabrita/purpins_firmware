@@ -11,13 +11,10 @@
 #include "SerialAbstract.h"
 
 
-/*!
- * \class SerialUARTImpl
- *
- * \brief UART0 Implementation of the Serial Class
- *
+/**
+ * UART0 Implementation of the Serial Class
  * \author Bruno Duarte Gouveia
- * \date
+ * \date Sep 16, 2014
  */
 class SerialUARTImpl: public SerialAbstract {
 public:
