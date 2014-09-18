@@ -8,24 +8,32 @@
 #ifndef PURPINS_MOTORS_H_
 #define PURPINS_MOTORS_H_
 
+/** @file */
+
+/**
+ * @defgroup MOTOR_GROUP Motor control constants
+ *
+ * @{
+ */
+
 #include <stdint.h>
 
 class PID;
 
-/**
- * Motorcontrol Frequency constants
- */
+//MotorControl constants
+
 #define PWM_FREQUENCY (20000)           /**< motor pwm frequency in Hz */
 #define QEILOOPFREQUENCY (40)           /**< QEI loop frequency in Hz */
-#define QEIRATE (1.0/QEILOOPFREQUENCY)
+#define QEIRATE (1.0/QEILOOPFREQUENCY)  /**< QEI loop interval in seconds */
 
-/**
- * PID constants
- */
-#define KC   (2.6)
-#define TI    (0.0)
-#define TD    (0.0)
 
+//PID constants
+
+#define KC    (2.6)  /**< proportional tuning constant*/
+#define TI    (0.0)  /**<integral tuning constant*/
+#define TD    (0.0)  /**<derivative tuning constant*/
+
+/** @} */
 
 /**
  * pp_motor structure used for convenience with all the motor variables
