@@ -19,7 +19,7 @@
 class SerialUARTImpl: public SerialAbstract {
 public:
 	SerialUARTImpl();
-	~SerialUARTImpl();
+	virtual ~SerialUARTImpl();
 
 	unsigned int available();
 

@@ -35,7 +35,16 @@ public:
 	 */
 	virtual void println(char * string)= 0;
 
-	virtual ~SerialAbstract()= 0;
+	virtual ~SerialAbstract();
+
+protected:
+	SerialAbstract(){
+
+	}
+
+
+
 };
+
 
 #endif /* SERIALABSTRACT_H_ */
