@@ -5,6 +5,7 @@
  *      Author: bgouveia
  */
 
+
 #include "SerialUARTImpl.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -40,10 +41,10 @@ SerialUARTImpl::SerialUARTImpl() {
 	UARTStdioConfig(0,115200,MAP_SysCtlClockGet());
 }
 
-SerialUARTImpl::~SerialUARTImpl() {
-	//
-}
 
+SerialUARTImpl::~SerialUARTImpl(){
+
+}
 
 unsigned int SerialUARTImpl::available(){
 	return UARTRxBytesAvail();

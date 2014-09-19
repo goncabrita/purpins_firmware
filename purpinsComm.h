@@ -134,7 +134,7 @@ public:
 	 * @param _serial Object with one of the SerialAbastact implementations
 	 *
 	 */
-	purpinsComm(SerialAbstract * _serial);
+	purpinsComm(SerialAbstract & _serial);
 
 	int getMsg(int * argv);
 
@@ -201,7 +201,7 @@ private:
 
 	unsigned long start_time;
 
-	SerialAbstract * serial;
+	SerialAbstract & serial;
 };
 
 #endif //__PURPINSCOMM

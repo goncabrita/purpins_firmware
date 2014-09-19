@@ -47,18 +47,34 @@ purpinsMotors::purpinsMotors() {
 	rightMotor.pid=&rightmotor_pid;
 
 
+	//TODO: tune settings
+	leftMotor.pid->setInputLimits(-100,100);
+	leftMotor.pid->setOutputLimits(-255,255);
+	leftMotor.pid->setBias(0.0);
+	leftMotor.pid->setMode(AUTO_MODE);
+
+	//TODO: tune settings
+    rightMotor.pid->setInputLimits(-100,100);
+	rightMotor.pid->setOutputLimits(-255,255);
+	rightMotor.pid->setBias(0.0);
+    rightMotor.pid->setMode(AUTO_MODE);
+
+
 	configureQEI();
 	configurePWM();
 }
 
 void purpinsMotors::setSpeed(float leftSpeed, float rightSpeed) {
+
 }
 
 void purpinsMotors::getSpeed(float& leftSpeed, float& rightSpeed) {
 
+
 }
 
 void purpinsMotors::getQEITicks(int32_t& left, int32_t& right) {
+	//TODO: Implement
 }
 
 void purpinsMotors::configureQEI() {

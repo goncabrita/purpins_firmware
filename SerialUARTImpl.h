@@ -19,9 +19,10 @@
 class SerialUARTImpl: public SerialAbstract {
 public:
 	SerialUARTImpl();
-	virtual ~SerialUARTImpl();
+	~SerialUARTImpl();
 
 	unsigned int available();
+
 	char read();
 	void println(char * string);
 
