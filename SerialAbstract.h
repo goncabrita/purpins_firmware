@@ -33,7 +33,7 @@ public:
 	 * write a string to the communication device
 	 * \param string string to be written to the communication device
 	 */
-	virtual void println(char * string)= 0;
+	virtual void println(const char * string)= 0;
 
 	virtual ~SerialAbstract();
 

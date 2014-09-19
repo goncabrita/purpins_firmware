@@ -24,7 +24,7 @@ public:
 	unsigned int available();
 
 	char read();
-	void println(char * string);
+	void println(const char* string);
 
 };
 

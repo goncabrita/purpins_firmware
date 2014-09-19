@@ -54,6 +54,6 @@ char SerialUARTImpl::read(){
 	return UARTgetc();
 }
 
-void SerialUARTImpl::println(char * string){
+void SerialUARTImpl::println(const char * string){
 	UARTprintf("%s\n",string);
 }
