@@ -5,26 +5,6 @@
  *      Author: bgouveia
  */
 
-
-/*! \mainpage Purpins
- *
- * \image html purpins.jpg
- *
- * \section intro_sec Introduction
- *
- * This is the introduction.
- *
- * \section install_sec Description
- *
- * \subsection schem Schematic
- *
- * \image html purpins_schematic.svg
- * \image latex purpins_schematic.eps "Purpins Schematic" width=\textwidth
- *
- */
-
-
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>

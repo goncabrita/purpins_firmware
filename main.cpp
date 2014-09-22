@@ -16,6 +16,16 @@
  *
  * \section install_sec Description
  *
+ * \subsection arch Architecture
+ *
+ * \image html architecture.svg
+ * \image latex architecture.eps "Purpins Architecture" width=\textwidth
+ *
+ * \subsection power Power Supply
+ *
+ * \image html power.svg
+ * \image latex power.eps "Purpins Power Supply" width=\textwidth
+ *
  * \subsection schem Schematic
  *
  * \image html purpins_schematic.svg
