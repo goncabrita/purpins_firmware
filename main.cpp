@@ -54,10 +54,32 @@
 #include "purpinsMotors.h"
 #include "purpinsComm.h"
 
+unsigned long milliSec = 0;
+unsigned long ulClockMS=0;
+
+
+void delayMSec(unsigned long msec)
+{
+	MAP_SysCtlDelay(ulClockMS*msec);
+}
+
+void delayuSec(unsigned long usec)
+{
+	MAP_SysCtlDelay((ulClockMS/1000)*usec);
+}
+
+void SysTickHandler(void)
+{
+	milliSec++;
+}
+
+unsigned long millis(void)
+{
+	return milliSec;
+}
+
 
 int main(){
-
-	unsigned long ulClockMS=0;
 
 	//
 	// Enable lazy stacking for interrupt handlers.  This allows floating-point
@@ -80,6 +102,8 @@ int main(){
 	purpinsMotors motors();
 
 	purpinsComm communication(*serial);
+
+
 
 
 

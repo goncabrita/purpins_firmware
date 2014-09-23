@@ -74,7 +74,7 @@
 	<variableList>
 		<variable>
 			<name>TIVAWARE_ROOT</name>
-			<value>file:/home/bgouveia/tivaware</value>
+			<value>file:/home/cabrita/tivaware</value>
 		</variable>
 	</variableList>
 </projectDescription>
