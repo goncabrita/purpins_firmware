@@ -26,6 +26,10 @@
 
 #include "vector3d.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define QUAT_W		0
 #define QUAT_X		1
 #define QUAT_Y		2
@@ -39,6 +43,10 @@ void eulerToQuaternion(vector3d_t v, quaternion_t q);
 void quaternionConjugate(quaternion_t s, quaternion_t d);
 void quaternionMultiply(quaternion_t qa, quaternion_t qb, quaternion_t qd);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MPUQUATERNION_H */
 

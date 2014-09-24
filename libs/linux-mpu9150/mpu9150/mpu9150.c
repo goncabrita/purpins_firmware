@@ -26,8 +26,8 @@
 
 
 #include "../glue/tivac_glue.h"
-#include "inv_mpu.h"
-#include "inv_mpu_dmp_motion_driver.h"
+#include "../eMPL/inv_mpu.h"
+#include "../eMPL/inv_mpu_dmp_motion_driver.h"
 #include "mpu9150.h"
 
 static int data_ready();

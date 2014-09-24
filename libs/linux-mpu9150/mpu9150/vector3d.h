@@ -24,6 +24,10 @@
 #ifndef VECTOR3D_H
 #define VECTOR3D_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <math.h>
 
 #define	DEGREE_TO_RAD		((float)M_PI / 180.0f)
@@ -39,6 +43,11 @@ typedef float vector3d_t[3];
 
 void vector3DotProduct(vector3d_t a, vector3d_t b, float *d);
 void vector3CrossProduct(vector3d_t a, vector3d_t b, vector3d_t d);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* VECTOR3D_H */
 

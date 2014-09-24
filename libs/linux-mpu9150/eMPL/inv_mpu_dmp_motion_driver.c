@@ -65,6 +65,10 @@
 #elif defined EMPL_TARGET_LINUX
 #include "linux_glue.h"
 
+#elif defined EMPL_TARGET_TIVAC
+
+#include "../glue/tivac_glue.h"
+
 #else
 #error  Gyro driver is missing the system layer implementations.
 #endif

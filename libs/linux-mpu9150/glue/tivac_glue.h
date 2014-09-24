@@ -27,8 +27,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "inv_mpu.h"
+#include "../eMPL/inv_mpu.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 static inline int reg_int_cb(struct int_param_s *int_param)
 {
@@ -40,8 +43,9 @@ static inline int reg_int_cb(struct int_param_s *int_param)
 #define delay_ms	linux_delay_ms
 #define get_ms		linux_get_ms
 
-/*#define log_i		printf
-#define log_e		printf*/
+#define log_i		UARTprintf
+#define log_e		UARTprintf
+#define printf 	    UARTprintf
 
 #define min(a, b) 	((a < b) ? a : b)
 
@@ -57,6 +61,10 @@ int linux_i2c_read(unsigned char slave_addr, unsigned char reg_addr,
 
 int linux_delay_ms(unsigned long num_ms);
 int linux_get_ms(unsigned long *count);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ifndef TIVAC_GLUE_H */
 

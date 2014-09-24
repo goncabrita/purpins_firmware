@@ -23,6 +23,8 @@
 
 
 #include <math.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <inc/hw_memmap.h>
 #include <inc/hw_types.h>
 #include <inc/hw_i2c.h>
@@ -77,108 +79,114 @@ void linux_set_i2c_bus(int bus)
 	// Set GPIO B2 and B3 as I2C pins.
 	//
 	MAP_GPIOPinConfigure(GPIO_PB2_I2C0SCL);
-	MAP_GPIOPinConfigure(GPIO_PB3_I2C0SDA)
+	MAP_GPIOPinConfigure(GPIO_PB3_I2C0SDA);
 	MAP_GPIOPinTypeI2C(GPIO_PORTB_BASE, GPIO_PIN_2 | GPIO_PIN_3);
 
-	MAP_I2CMasterInitExpClk(I2C0_MASTER_BASE,MAP_SysCtlClockGet(),true);  //false = 100khz , true = 400khz
+	MAP_I2CMasterInitExpClk(I2C0_BASE,MAP_SysCtlClockGet(),true);  //false = 100khz , true = 400khz
 }
 
+
 int linux_i2c_write(unsigned char slave_addr, unsigned char reg_addr,
-       unsigned char length, unsigned char const *data)
+		unsigned char length, unsigned char const *data)
 {
-	    I2CMasterSlaveAddrSet(I2C0_MASTER_BASE, address, false);  // false = write.  true = read.
-	    I2CMasterDataPut(I2C0_MASTER_BASE, *bytes++);
 
-	    // Send single piece of data if it's the only piece to send
-	    if (numBytes == 1){
-	        I2CMasterControl(I2C0_MASTER_BASE, I2C_MASTER_CMD_SINGLE_SEND);
-	        // Wait until done transmitting
-	        while(I2CMasterBusy(I2C0_MASTER_BASE));
+	unsigned char num = length;
 
-	        return 0; // all done
-	    }
-	    // We have multiple bytes to send
-	    //
-	    // Start sending the first byte of the burst (already loaded with I2CMasterDataPut)
-	    //
-	    I2CMasterControl(I2C0_MASTER_BASE, I2C_MASTER_CMD_BURST_SEND_START);
-	    // Wait until done transmitting
-	    while(I2CMasterBusy(I2C0_MASTER_BASE));
 
-	    //i2c_buffer_index--;
-	    //data++;
-	    numBytes--;
+	MAP_I2CMasterSlaveAddrSet(I2C0_BASE, slave_addr, false);  // false = write.  true = read.
+	MAP_I2CMasterDataPut(I2C0_BASE, reg_addr);
 
-	    //
-	    // Continue sending consecutive data
-	    //
-	    while(numBytes > 1)
-	    {
-	        I2CMasterDataPut(I2C0_MASTER_BASE, *bytes++);
-	        I2CMasterControl(I2C0_MASTER_BASE, I2C_MASTER_CMD_BURST_SEND_CONT);
-	        while(I2CMasterBusy(I2C0_MASTER_BASE));
-	        numBytes--;
-	    }
+	if (length == 0) {
 
-	    //
-	    // Send last piece of data and a STOP
-	    //
-	    I2CMasterDataPut(I2C0_MASTER_BASE, *bytes);
-	    I2CMasterControl(I2C0_MASTER_BASE, I2C_MASTER_CMD_BURST_SEND_FINISH);
-	    while(I2CMasterBusy(I2C0_MASTER_BASE));
+		MAP_I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_SINGLE_SEND);
+		// Wait until done transmitting
+		while(MAP_I2CMasterBusy(I2C0_BASE));
 
-	    return 0;
+		return 1; // all done
+	}else{
+
+		MAP_I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_BURST_SEND_START);
+		// Wait until done transmitting
+		while(MAP_I2CMasterBusy(I2C0_BASE));
+
+		num--;
+
+		//
+		// Continue sending consecutive data
+		//
+		while(num > 1)
+		{
+			MAP_I2CMasterDataPut(I2C0_BASE, *data++);
+			MAP_I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_BURST_SEND_CONT);
+			while(MAP_I2CMasterBusy(I2C0_BASE));
+			num--;
+		}
+
+		//
+		// Send last piece of data and a STOP
+		//
+		MAP_I2CMasterDataPut(I2C0_BASE, *data);
+		MAP_I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_BURST_SEND_FINISH);
+		while(MAP_I2CMasterBusy(I2C0_BASE));
+
+		return length;
+
+	}
 
 	return 0;
 }
 
 int linux_i2c_read(unsigned char slave_addr, unsigned char reg_addr,
-       unsigned char length, unsigned char *data)
+		unsigned char length, unsigned char *data)
 {
-	 I2CMasterSlaveAddrSet(I2C0_MASTER_BASE, address, true);  // false = write.  true = read.
+	unsigned char num = length;
 
-	    // Send single piece of data if it's the only piece to send
-	    if (numBytes == 1){
-	        I2CMasterControl(I2C0_MASTER_BASE, I2C_MASTER_CMD_SINGLE_RECEIVE);
-	        // Wait until done transmitting
-	        while(I2CMasterBusy(I2C0_MASTER_BASE));
-	        *bytes++ = I2CMasterDataGet(I2C_MASTER_BASE);
-	        numBytes--;
-	        return 0; // all done
-	    }
-	    // We have multiple bytes to send
-	    //
-	    // Start sending the first byte of the burst (already loaded with I2CMasterDataPut)
-	    //
-	    I2CMasterControl(I2C0_MASTER_BASE, I2C_MASTER_CMD_BURST_RECEIVE_START);
-	    // Wait until done transmitting
-	    while(I2CMasterBusy(I2C0_MASTER_BASE));
+	linux_i2c_write(slave_addr, reg_addr, 0, NULL);
 
-	    //i2c_buffer_index--;
-	    //data++;
-	    *bytes++ = I2CMasterDataGet(I2C_MASTER_BASE);
-	    numBytes--;
 
-	    //
-	    // Continue sending consecutive data
-	    //
-	    while(numBytes > 1)
-	    {
-	        I2CMasterControl(I2C0_MASTER_BASE, I2C_MASTER_CMD_BURST_RECEIVE_CONT);
-	        while(I2CMasterBusy(I2C0_MASTER_BASE));
-	        *bytes++ = I2CMasterDataGet(I2C_MASTER_BASE);
-	        numBytes--;
-	    }
+	MAP_I2CMasterSlaveAddrSet(I2C0_BASE, slave_addr, true);  // false = write.  true = read.
 
-	    //
-	    // Send last piece of data and a STOP
-	    //
-	    I2CMasterControl(I2C0_MASTER_BASE, I2C_MASTER_CMD_BURST_RECEIVE_FINISH);
-	    while(I2CMasterBusy(I2C0_MASTER_BASE));
-	    *bytes++ = I2CMasterDataGet(I2C_MASTER_BASE);
-	    numBytes--;
+	// Send single piece of data if it's the only piece to send
+	if (length == 1){
+		MAP_I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_SINGLE_RECEIVE);
+		// Wait until done transmitting
+		while(MAP_I2CMasterBusy(I2C0_BASE));
+		*data++ = MAP_I2CMasterDataGet(I2C0_BASE);
+		num--;
+		return 1; // all done
+	}
 
-	    return 0;
+	// We have multiple data to send
+	//
+	// Start sending the first byte of the burst (already loaded with I2CMasterDataPut)
+	//
+	MAP_I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_BURST_RECEIVE_START);
+	// Wait until done transmitting
+	while(MAP_I2CMasterBusy(I2C0_BASE));
+
+	*data++ = MAP_I2CMasterDataGet(I2C0_BASE);
+	num--;
+
+	//
+	// Continue sending consecutive data
+	//
+	while(num > 1)
+	{
+		MAP_I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_BURST_RECEIVE_CONT);
+		while(MAP_I2CMasterBusy(I2C0_BASE));
+		*data++ = MAP_I2CMasterDataGet(I2C0_BASE);
+		num--;
+	}
+
+	//
+	// Send last piece of data and a STOP
+	//
+	MAP_I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_BURST_RECEIVE_FINISH);
+	while(MAP_I2CMasterBusy(I2C0_BASE));
+	*data++ = MAP_I2CMasterDataGet(I2C0_BASE);
+	num--;
+
+	return length;
 }
 
 int linux_delay_ms(unsigned long num_ms)
