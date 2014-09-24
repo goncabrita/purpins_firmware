@@ -73,7 +73,7 @@ int mpu9150_init(int i2c_bus, int sample_rate, int mix_factor)
 	linux_set_i2c_bus(i2c_bus);
 
 	printf("\nInitializing IMU .");
-	fflush(stdout);
+
 
 	if (mpu_init(NULL)) {
 		printf("\nmpu_init() failed\n");
@@ -81,15 +81,23 @@ int mpu9150_init(int i2c_bus, int sample_rate, int mix_factor)
 	}
 
 	printf(".");
-	fflush(stdout);
+
+
+#if defined AK8963_SECONDARY || defined AK8975_SECONDARY
+
 
 	if (mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS)) {
 		printf("\nmpu_set_sensors() failed\n");
 		return -1;
 	}
-
+#else
+	if (mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL)) {
+		printf("\nmpu_set_sensors() failed\n");
+		return -1;
+	}
+#endif
 	printf(".");
-	fflush(stdout);
+
 
 	if (mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL)) {
 		printf("\nmpu_configure_fifo() failed\n");
@@ -97,23 +105,26 @@ int mpu9150_init(int i2c_bus, int sample_rate, int mix_factor)
 	}
 
 	printf(".");
-	fflush(stdout);
 	
-	if (mpu_set_sample_rate(sample_rate)) {
+
+	if (mpu_set_sample_rate(200)) {
 		printf("\nmpu_set_sample_rate() failed\n");
 		return -1;
 	}
 
 	printf(".");
-	fflush(stdout);
 
-	if (mpu_set_compass_sample_rate(sample_rate)) {
+
+#if defined AK8963_SECONDARY || defined AK8975_SECONDARY
+
+	if (mpu_set_compass_sample_rate(50)) {
 		printf("\nmpu_set_compass_sample_rate() failed\n");
 		return -1;
 	}
+#endif
 
 	printf(".");
-	fflush(stdout);
+
 
 	if (dmp_load_motion_driver_firmware()) {
 		printf("\ndmp_load_motion_driver_firmware() failed\n");
@@ -121,7 +132,7 @@ int mpu9150_init(int i2c_bus, int sample_rate, int mix_factor)
 	}
 
 	printf(".");
-	fflush(stdout);
+
 
 	if (dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_orientation))) {
 		printf("\ndmp_set_orientation() failed\n");
@@ -129,7 +140,7 @@ int mpu9150_init(int i2c_bus, int sample_rate, int mix_factor)
 	}
 
 	printf(".");
-	fflush(stdout);
+
 
   	if (dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL 
 						| DMP_FEATURE_SEND_CAL_GYRO | DMP_FEATURE_GYRO_CAL)) {
@@ -138,15 +149,14 @@ int mpu9150_init(int i2c_bus, int sample_rate, int mix_factor)
 	}
 
 	printf(".");
-	fflush(stdout);
+
  
 	if (dmp_set_fifo_rate(sample_rate)) {
 		printf("\ndmp_set_fifo_rate() failed\n");
 		return -1;
 	}
-
 	printf(".");
-	fflush(stdout);
+
 
 	if (mpu_set_dmp_state(1)) {
 		printf("\nmpu_set_dmp_state(1) failed\n");
@@ -272,8 +282,10 @@ int mpu9150_read(mpudata_t *mpu)
 	if (mpu9150_read_dmp(mpu) != 0)
 		return -1;
 
+#if defined AK8963_SECONDARY || defined AK8975_SECONDARY
 	if (mpu9150_read_mag(mpu) != 0)
 		return -1;
+#endif
 
 	calibrate_data(mpu);
 

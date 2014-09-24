@@ -40,7 +40,6 @@
 
 #include <stdint.h>
 
-extern unsigned long millis ();
 class SerialAbstract;
 
 /** @file */

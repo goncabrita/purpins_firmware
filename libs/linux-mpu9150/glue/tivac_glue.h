@@ -24,10 +24,13 @@
 #ifndef TIVAC_GLUE_H
 #define TIVAC_GLUE_H
 
+#include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <math.h>
 #include "../eMPL/inv_mpu.h"
+#include "utils/uartstdio.h"
 
 #ifdef __cplusplus
 extern "C" {
