@@ -80,9 +80,9 @@ void linux_set_i2c_bus(int bus)
 	//
 	MAP_GPIOPinConfigure(GPIO_PB2_I2C0SCL);
 	MAP_GPIOPinConfigure(GPIO_PB3_I2C0SDA);
-	MAP_GPIOPinTypeI2C(GPIO_PORTB_BASE, GPIO_PIN_2 | GPIO_PIN_3);
+	MAP_GPIOPinTypeI2C(GPIO_PORTB_BASE, GPIO_PIN_3);
 
-	MAP_I2CMasterInitExpClk(I2C0_BASE,MAP_SysCtlClockGet(),true);  //false = 100khz , true = 400khz
+	MAP_I2CMasterInitExpClk(I2C0_BASE,MAP_SysCtlClockGet(),false);  //false = 100khz , true = 400khz
 }
 
 
@@ -102,7 +102,7 @@ int linux_i2c_write(unsigned char slave_addr, unsigned char reg_addr,
 		// Wait until done transmitting
 		while(MAP_I2CMasterBusy(I2C0_BASE));
 
-		return 1; // all done
+		return 0; // all done
 	}else{
 
 		MAP_I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_BURST_SEND_START);
@@ -129,11 +129,11 @@ int linux_i2c_write(unsigned char slave_addr, unsigned char reg_addr,
 		MAP_I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_BURST_SEND_FINISH);
 		while(MAP_I2CMasterBusy(I2C0_BASE));
 
-		return length;
+		return 0;
 
 	}
 
-	return 0;
+	return 1;
 }
 
 int linux_i2c_read(unsigned char slave_addr, unsigned char reg_addr,
@@ -153,7 +153,7 @@ int linux_i2c_read(unsigned char slave_addr, unsigned char reg_addr,
 		while(MAP_I2CMasterBusy(I2C0_BASE));
 		*data++ = MAP_I2CMasterDataGet(I2C0_BASE);
 		num--;
-		return 1; // all done
+		return 0; // all done
 	}
 
 	// We have multiple data to send
@@ -186,7 +186,7 @@ int linux_i2c_read(unsigned char slave_addr, unsigned char reg_addr,
 	*data++ = MAP_I2CMasterDataGet(I2C0_BASE);
 	num--;
 
-	return length;
+	return 0;
 }
 
 int linux_delay_ms(unsigned long num_ms)

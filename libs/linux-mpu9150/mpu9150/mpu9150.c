@@ -180,7 +180,7 @@ void mpu9150_exit()
 void mpu9150_set_accel_cal(caldata_t *cal)
 {
 	int i;
-	long bias[3];
+	int32_t bias[3];
 
 	if (!cal) {
 		use_accel_cal = 0;
@@ -311,14 +311,14 @@ int data_ready()
 void calibrate_data(mpudata_t *mpu)
 {
 	if (use_mag_cal) {
-      mpu->calibratedMag[VEC3_Y] = -(short)(((long)(mpu->rawMag[VEC3_X] - mag_cal_data.offset[VEC3_X])
-			* (long)MAG_SENSOR_RANGE) / (long)mag_cal_data.range[VEC3_X]);
+      mpu->calibratedMag[VEC3_Y] = -(short)(((int32_t)(mpu->rawMag[VEC3_X] - mag_cal_data.offset[VEC3_X])
+			* (int32_t)MAG_SENSOR_RANGE) / (int32_t)mag_cal_data.range[VEC3_X]);
 
-      mpu->calibratedMag[VEC3_X] = (short)(((long)(mpu->rawMag[VEC3_Y] - mag_cal_data.offset[VEC3_Y])
-			* (long)MAG_SENSOR_RANGE) / (long)mag_cal_data.range[VEC3_Y]);
+      mpu->calibratedMag[VEC3_X] = (short)(((int32_t)(mpu->rawMag[VEC3_Y] - mag_cal_data.offset[VEC3_Y])
+			* (int32_t)MAG_SENSOR_RANGE) / (int32_t)mag_cal_data.range[VEC3_Y]);
 
-      mpu->calibratedMag[VEC3_Z] = (short)(((long)(mpu->rawMag[VEC3_Z] - mag_cal_data.offset[VEC3_Z])
-			* (long)MAG_SENSOR_RANGE) / (long)mag_cal_data.range[VEC3_Z]);
+      mpu->calibratedMag[VEC3_Z] = (short)(((int32_t)(mpu->rawMag[VEC3_Z] - mag_cal_data.offset[VEC3_Z])
+			* (int32_t)MAG_SENSOR_RANGE) / (int32_t)mag_cal_data.range[VEC3_Z]);
 	}
 	else {
 		mpu->calibratedMag[VEC3_Y] = -mpu->rawMag[VEC3_X];
@@ -327,14 +327,14 @@ void calibrate_data(mpudata_t *mpu)
 	}
 
 	if (use_accel_cal) {
-      mpu->calibratedAccel[VEC3_X] = -(short)(((long)mpu->rawAccel[VEC3_X] * (long)ACCEL_SENSOR_RANGE)
-			/ (long)accel_cal_data.range[VEC3_X]);
+      mpu->calibratedAccel[VEC3_X] = -(short)(((int32_t)mpu->rawAccel[VEC3_X] * (int32_t)ACCEL_SENSOR_RANGE)
+			/ (int32_t)accel_cal_data.range[VEC3_X]);
 
-      mpu->calibratedAccel[VEC3_Y] = (short)(((long)mpu->rawAccel[VEC3_Y] * (long)ACCEL_SENSOR_RANGE)
-			/ (long)accel_cal_data.range[VEC3_Y]);
+      mpu->calibratedAccel[VEC3_Y] = (short)(((int32_t)mpu->rawAccel[VEC3_Y] * (int32_t)ACCEL_SENSOR_RANGE)
+			/ (int32_t)accel_cal_data.range[VEC3_Y]);
 
-      mpu->calibratedAccel[VEC3_Z] = (short)(((long)mpu->rawAccel[VEC3_Z] * (long)ACCEL_SENSOR_RANGE)
-			/ (long)accel_cal_data.range[VEC3_Z]);
+      mpu->calibratedAccel[VEC3_Z] = (short)(((int32_t)mpu->rawAccel[VEC3_Z] * (int32_t)ACCEL_SENSOR_RANGE)
+			/ (int32_t)accel_cal_data.range[VEC3_Z]);
 	}
 	else {
 		mpu->calibratedAccel[VEC3_X] = -mpu->rawAccel[VEC3_X];

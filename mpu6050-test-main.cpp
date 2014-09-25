@@ -33,6 +33,7 @@
  *
  */
 
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -42,12 +43,14 @@
 #include <inc/hw_gpio.h>
 #include <driverlib/debug.h>
 #include <driverlib/fpu.h>
+#include <driverlib/i2c.h>
 #include <driverlib/interrupt.h>
 #include <driverlib/pin_map.h>
 #include <driverlib/rom.h>
 #include <driverlib/rom_map.h>
 #include <driverlib/sysctl.h>
 #include <driverlib/pin_map.h>
+#include <driverlib/gpio.h>
 #include <cstring>
 
 
@@ -108,7 +111,7 @@ int main(){
 	//
 	// Set the clocking to run from the PLL.
 	//
-	MAP_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
+	MAP_SysCtlClockSet(SYSCTL_SYSDIV_2_5 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
 			SYSCTL_XTAL_16MHZ);
 
 
@@ -117,15 +120,18 @@ int main(){
 	SerialAbstract * serial = new SerialUARTImpl();
 	purpinsMotors motors();
 
+	// Get the current processor clock frequency.
+	ulClockMS = MAP_SysCtlClockGet() / (3 * 1000);
+
 	//purpinsComm communication(*serial);
 
 	mpudata_t mpu;
 
 	unsigned long sample_rate = 10 ;
 
-
 	//mpu9150_set_debug(1);
 	serial->println("Initializing MPU_6050...");
+
 	if (mpu9150_init(0,sample_rate, 0)){
 		serial->println("MPU6050 - MPU6050 connection failed");
 	}
@@ -133,10 +139,6 @@ int main(){
 
 
 	MAP_IntMasterEnable();
-
-
-	// Get the current processor clock frequency.
-	ulClockMS = MAP_SysCtlClockGet() / (3 * 1000);
 
 	unsigned long loop_delay = (1000 / sample_rate) - 2;
 
@@ -152,6 +154,3 @@ int main(){
 	}
 	return 0;
 }
-
-
-
