@@ -54,10 +54,20 @@
 #include "purpinsMotors.h"
 #include "purpinsComm.h"
 
+#define SYSTICKS_PER_SECOND     1000
+
 unsigned long milliSec = 0;
 unsigned long ulClockMS=0;
 
 extern "C" {
+
+int decimalOf(float val)
+{
+	int retval = (val-(int)val)*100;
+
+	return (retval>0)?retval:-retval;
+}
+
 
 void delayMSec(unsigned long msec)
 {
@@ -103,17 +113,24 @@ int main(){
 	SerialAbstract * serial = new SerialUARTImpl();
 	purpinsMotors motors();
 
+	// Get the current processor clock frequency.
+	ulClockMS = MAP_SysCtlClockGet() / (3 * 1000);
+
 	purpinsComm communication(*serial);
 
 
-
+	//
+	// Configure SysTick to occur 1000 times per second
+	//
+	MAP_SysTickPeriodSet(MAP_SysCtlClockGet() / SYSTICKS_PER_SECOND);
+	MAP_SysTickIntEnable();
+	MAP_SysTickEnable();
 
 
 	MAP_IntMasterEnable();
 
 
-	// Get the current processor clock frequency.
-	ulClockMS = MAP_SysCtlClockGet() / (3 * 1000);
+
 
 	while(1){
 

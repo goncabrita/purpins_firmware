@@ -63,6 +63,9 @@
 
 #include "libs/linux-mpu9150/mpu9150/mpu9150.h"
 
+#define SYSTICKS_PER_SECOND     1000
+
+
 unsigned long milliSec = 0;
 unsigned long ulClockMS=0;
 
@@ -150,6 +153,13 @@ int main(){
 	}
 	memset(&mpu, 0, sizeof(mpudata_t));
 
+
+	//
+	// Configure SysTick to occur 1000 times per second
+	//
+	MAP_SysTickPeriodSet(MAP_SysCtlClockGet() / SYSTICKS_PER_SECOND);
+	MAP_SysTickIntEnable();
+	MAP_SysTickEnable();
 
 	MAP_IntMasterEnable();
 
