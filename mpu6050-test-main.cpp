@@ -68,6 +68,14 @@ unsigned long ulClockMS=0;
 
 extern "C" {
 
+int decimalOf(float val)
+{
+	int retval = (val-(int)val)*100;
+
+	return (retval>0)?retval:-retval;
+}
+
+
 void delayMSec(unsigned long msec)
 {
 	MAP_SysCtlDelay(ulClockMS*msec);
@@ -92,10 +100,15 @@ unsigned long millis(void)
 
 void print_fused_euler_angles(mpudata_t *mpu)
 {
-	UARTprintf("\rX: %0.0f Y: %0.0f Z: %0.0f        ",
-			mpu->fusedEuler[VEC3_X] * RAD_TO_DEGREE,
-			mpu->fusedEuler[VEC3_Y] * RAD_TO_DEGREE,
-			mpu->fusedEuler[VEC3_Z] * RAD_TO_DEGREE);
+	//UARTprintf("acc scale: %d.%02d,%d.%02d,%d.%02d\n", (int)x, decimalOf(x)
+
+    float x,y,z;
+
+	x=mpu->fusedEuler[VEC3_X] * RAD_TO_DEGREE;
+	y=mpu->fusedEuler[VEC3_Y] * RAD_TO_DEGREE;
+	z=mpu->fusedEuler[VEC3_Z] * RAD_TO_DEGREE;
+
+	UARTprintf("\rX: %d.%02d Y: %d.%02d Z: %d.%02d\n",(int)x, decimalOf(z),(int)y, decimalOf(y),(int)z, decimalOf(z));
 }
 
 int main(){
