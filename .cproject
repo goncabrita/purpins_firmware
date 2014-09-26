@@ -135,7 +135,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="main.cpp|libs/linux-mpu9150/imucal.c|libs/linux-mpu9150/imu.c|libs/linux-mpu9150/glue/linux_glue.c|main-test.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="mpu6050-test-main.cpp|libs/linux-mpu9150/imucal.c|libs/linux-mpu9150/imu.c|libs/linux-mpu9150/glue/linux_glue.c|main-test.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -273,7 +273,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="main.cpp|libs/linux-mpu9150/imucal.c|libs/linux-mpu9150/imu.c|libs/linux-mpu9150/glue/linux_glue.c|main-test.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="mpu6050-test-main.cpp|libs/linux-mpu9150/imucal.c|libs/linux-mpu9150/imu.c|libs/linux-mpu9150/glue/linux_glue.c|main-test.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

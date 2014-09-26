@@ -48,11 +48,15 @@
 #include <driverlib/rom_map.h>
 #include <driverlib/sysctl.h>
 #include <driverlib/pin_map.h>
+#include <driverlib/gpio.h>
+#include <cstring>
 
 
 #include "SerialUARTImpl.h"
 #include "purpinsMotors.h"
 #include "purpinsComm.h"
+
+#include "libs/linux-mpu9150/mpu9150/mpu9150.h"
 
 #define SYSTICKS_PER_SECOND     1000
 
@@ -117,6 +121,20 @@ int main(){
 	ulClockMS = MAP_SysCtlClockGet() / (3 * 1000);
 
 	purpinsComm communication(*serial);
+
+	mpudata_t mpu;
+
+	unsigned long sample_rate = 10 ;
+
+	//mpu9150_set_debug(1);
+	serial->println("Initializing MPU_6050...");
+
+	if (mpu9150_init(0,sample_rate, 0)){
+		serial->println("MPU6050 - MPU6050 connection failed");
+	}
+	memset(&mpu, 0, sizeof(mpudata_t));
+
+	unsigned long loop_delay = (1000 / sample_rate) - 2;
 
 
 	//
