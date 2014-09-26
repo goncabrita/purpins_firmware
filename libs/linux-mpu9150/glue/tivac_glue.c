@@ -53,15 +53,8 @@ extern unsigned long millis(void);
 void __no_operation(void) { }
 
 //PB2/PB3 i2c 0
-
 void linux_set_i2c_bus(int bus)
 {
-	//
-	// For this example I2C0 is used with PortB[3:2].  The actual port and
-	// pins used may be different on your part, consult the data sheet for
-	// more information.  GPIO port B needs to be enabled so these pins can
-	// be used.
-	//
 
 	MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
 
@@ -80,7 +73,10 @@ void linux_set_i2c_bus(int bus)
 	//
 	MAP_GPIOPinConfigure(GPIO_PB2_I2C0SCL);
 	MAP_GPIOPinConfigure(GPIO_PB3_I2C0SDA);
+
 	MAP_GPIOPinTypeI2C(GPIO_PORTB_BASE, GPIO_PIN_3);
+	MAP_GPIOPinTypeI2CSCL(GPIO_PORTB_BASE, GPIO_PIN_2);
+
 
 	MAP_I2CMasterInitExpClk(I2C0_BASE,MAP_SysCtlClockGet(),false);  //false = 100khz , true = 400khz
 }
@@ -114,7 +110,7 @@ int linux_i2c_write(unsigned char slave_addr, unsigned char reg_addr,
 		//
 		// Continue sending consecutive data
 		//
-		while(num > 1)
+		while(num >= 1)
 		{
 			MAP_I2CMasterDataPut(I2C0_BASE, *data++);
 			MAP_I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_BURST_SEND_CONT);
