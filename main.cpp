@@ -12,13 +12,16 @@
  *
  * \section intro_sec Introduction
  *
- * This is the introduction.
+ * The aim of this project is to develop a cheap mobile robot for being used at the LSE for mobile robot swarming experiments.
+ * The main goal is to allow for
+ * swarming experimentation at a small cost without sacrificing robot quality. It might however also be used for other types of research such as multi-robot experimentation or even as a single robot
  *
  * \section install_sec Description
  *
  * \subsection arch Architecture
  *
  * \image html architecture.svg
+ *
  * \image latex architecture.eps "Purpins Architecture" width=\textwidth
  *
  * \subsection power Power Supply
@@ -30,6 +33,18 @@
  *
  * \image html purpins_schematic.svg
  * \image latex purpins_schematic.eps "Purpins Schematic" width=\textwidth
+ *
+ *
+ * \subsection in Launchpad Modifications
+ *
+ * To separate the PD0 pin from PB6 and PD1 from PB7 (pins connected to maintain compatibility with some MSP430 Boosterpacks) you need to unsolder the R9 and and R10 resistors from the Tiva-C EK-TM4C123GXL Board.
+ * \image html tiva_closeup.jpg
+ * \image latex tiva_closeup.eps "R9 and R10 Resistors"
+ *
+ *
+ * \subsection cn Compilation Notes
+ *
+ * Depending on the IMU available on the board (MPU6050 or MPU9150) you need to enable the "MPU6050" or "MPU9150" and "AK8975_SECONDARY" preprocessor symbols respectively.
  *
  */
 
@@ -106,7 +121,7 @@ int main(){
 	MAP_FPULazyStackingEnable();
 
 	//
-	// Set the clocking to run from the PLL.
+	// Set the clocking to run from the PLL at 50MHZ, change to SYSCTL_SYSDIV_2_5 for 80MHz if neeeded
 	//
 	MAP_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
 			SYSCTL_XTAL_16MHZ);

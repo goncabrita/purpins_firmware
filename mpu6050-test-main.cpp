@@ -1,36 +1,8 @@
 /*
- * main.cpp
+ *
  *
  *  Created on: Apr 10, 2014
  *      Author: bgouveia
- */
-
-
-/*! \mainpage Purpins
- *
- * \image html purpins.jpg
- *
- * \section intro_sec Introduction
- *
- * This is the introduction.
- *
- * \section install_sec Description
- *
- * \subsection arch Architecture
- *
- * \image html architecture.svg
- * \image latex architecture.eps "Purpins Architecture" width=\textwidth
- *
- * \subsection power Power Supply
- *
- * \image html power.svg
- * \image latex power.eps "Purpins Power Supply" width=\textwidth
- *
- * \subsection schem Schematic
- *
- * \image html purpins_schematic.svg
- * \image latex purpins_schematic.eps "Purpins Schematic" width=\textwidth
- *
  */
 
 
