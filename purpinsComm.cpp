@@ -38,6 +38,10 @@
 #include "purpinsComm.h"
 #include "SerialAbstract.h"
 
+#include "driverlib/uart.h"
+#include "driverlib/pin_map.h"
+#include "utils/uartstdio.h"
+
 extern "C"{
 #include "utils/ustdlib.h"
 extern  unsigned long millis(void);
@@ -45,7 +49,7 @@ extern  unsigned long millis(void);
 
 
 
-int PP_ACTION_PARAM_COUNT[] = {0, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5, 2, 2, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0, 0, 0};
+int PP_ACTION_PARAM_COUNT[] = {0, 2, 2, 0, 0, 0, 0, 1, 3, 0, 2, 0, 1, 0};
 
 purpinsComm::purpinsComm(SerialAbstract & _serial):serial(_serial)
 {
@@ -58,105 +62,107 @@ purpinsComm::purpinsComm(SerialAbstract & _serial):serial(_serial)
 int purpinsComm::getMsg(int * argv)
 {
 	// If data is available...
-	if(serial.available())
-	{
+	//if(serial.available())
+	//{
 		// Read a uint8_t from the serial port
-		uint8_t newByte = serial.read();
+		//uint8_t newByte = serial.read();
+
+		//serial.println("xplim");
 
 		// Got a start uint8_t!!!
-		if(newByte == PP_STR)
-		{
-			start_time = millis();
-
-			// If we are waiting for data start a new message
-			if(serial_port_status == AWATING_DATA)
-			{
-				serial_port_status = GETTING_DATA;
-
-				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-				serial_buffer[0] = newByte;
-				serial_buffer_size = 1;
-			}
-			// Otherwise this is an error!
-			else
-			{
-				if(debug) serial.println("[ERROR] Got start uint8_t in the middle of a message!");
-				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-				serial_port_status = AWATING_DATA;
-			}
-		}
-		// Got an end uint8_t and a message is being constructed
-		else if(newByte == PP_END && serial_port_status == GETTING_DATA)
-		{
-			if(serial_buffer_size < SERIAL_BUFFER_SIZE-1)
-			{
-				serial_buffer[serial_buffer_size] = newByte;
-				serial_buffer_size++;
-
-				serial_buffer[serial_buffer_size] = '\0';
-				serial_buffer_size++;
-
-				if(debug)
-				{
-					usprintf(debug_msg,"[INFO] Got message: %s %ul ms",serial_buffer,millis()-start_time);
-					serial.println(debug_msg);
-				}
-
-				serial_port_status = AWATING_DATA;
-
-				// Next parse incoming data...
-				int msg_id = getValue(1);
-				if(msg_id != id && msg_id != 0) return 0;
-
-				int action = getValue(next_separator+1);
-
-				if(action == -1 && debug) serial.println("[ERROR] Could not find an action in the message!");
-
-				if(action > 0 && action < PP_ACTION_COUNT)
-				{
-					for(int i=0 ; i<PP_ACTION_PARAM_COUNT[action-1] ; i++)
-					{
-						argv[i] = getValue(next_separator+1);
-
-						if(argv[i] == -1)
-						{
-							if(debug) serial.println("[ERROR] Insufficient number of parameters for this action!");
-							return 0;
-						}
-					}
-					return action;
-				}
-				else
-				{
-					if(debug){
-						usprintf(debug_msg,"[ERROR] Unknown action: %d",action);
-						serial.println(debug_msg);
-					}
-				}
-			}
-			else
-			{
-				if(debug) serial.println("[ERROR] Buffer size exceeded!");
-				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-				serial_port_status = AWATING_DATA;
-			}
-		}
-		// Got a uint8_t and a message is being constructed
-		else if(serial_port_status == GETTING_DATA)
-		{
-			if(serial_buffer_size < SERIAL_BUFFER_SIZE)
-			{
-				serial_buffer[serial_buffer_size] = newByte;
-				serial_buffer_size++;
-			}
-			else
-			{
-				if(debug) serial.println("[ERROR] Buffer size exceeded!");
-				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-				serial_port_status = AWATING_DATA;
-			}
-		}
-	}
+//		if(newByte == PP_STR)
+//		{
+//			start_time = millis();
+//
+//			// If we are waiting for data start a new message
+//			if(serial_port_status == AWATING_DATA)
+//			{
+//				serial_port_status = GETTING_DATA;
+//
+//				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
+//				serial_buffer[0] = newByte;
+//				serial_buffer_size = 1;
+//			}
+//			// Otherwise this is an error!
+//			else
+//			{
+//				if(debug) serial.println("[ERROR] Got start uint8_t in the middle of a message!");
+//				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
+//				serial_port_status = AWATING_DATA;
+//			}
+//		}
+//		// Got an end uint8_t and a message is being constructed
+//		else if(newByte == PP_END && serial_port_status == GETTING_DATA)
+//		{
+//			if(serial_buffer_size < SERIAL_BUFFER_SIZE-1)
+//			{
+//				serial_buffer[serial_buffer_size] = newByte;
+//				serial_buffer_size++;
+//
+//				serial_buffer[serial_buffer_size] = '\0';
+//				serial_buffer_size++;
+//
+//				if(debug)
+//				{
+//					usprintf(debug_msg,"[INFO] Got message: %s %ul ms",serial_buffer,millis()-start_time);
+//					serial.println(debug_msg);
+//				}
+//
+//				serial_port_status = AWATING_DATA;
+//
+//				// Next parse incoming data...
+//				int msg_id = getValue(1);
+//				if(msg_id != id && msg_id != 0) return 0;
+//
+//				int action = getValue(next_separator+1);
+//
+//				if(action == -1 && debug) serial.println("[ERROR] Could not find an action in the message!");
+//
+//				if(action > 0 && action < PP_ACTION_COUNT)
+//				{
+//					for(int i=0 ; i<PP_ACTION_PARAM_COUNT[action-1] ; i++)
+//					{
+//						argv[i] = getValue(next_separator+1);
+//
+//						if(argv[i] == -1)
+//						{
+//							if(debug) serial.println("[ERROR] Insufficient number of parameters for this action!");
+//							return 0;
+//						}
+//					}
+//					return action;
+//				}
+//				else
+//				{
+//					if(debug){
+//						usprintf(debug_msg,"[ERROR] Unknown action: %d",action);
+//						serial.println(debug_msg);
+//					}
+//				}
+//			}
+//			else
+//			{
+//				if(debug) serial.println("[ERROR] Buffer size exceeded!");
+//				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
+//				serial_port_status = AWATING_DATA;
+//			}
+//		}
+//		// Got a uint8_t and a message is being constructed
+//		else if(serial_port_status == GETTING_DATA)
+//		{
+//			if(serial_buffer_size < SERIAL_BUFFER_SIZE)
+//			{
+//				serial_buffer[serial_buffer_size] = newByte;
+//				serial_buffer_size++;
+//			}
+//			else
+//			{
+//				if(debug) serial.println("[ERROR] Buffer size exceeded!");
+//				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
+//				serial_port_status = AWATING_DATA;
+//			}
+//		}
+	//}
 
 	return 0;
 }

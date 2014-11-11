@@ -66,7 +66,6 @@
 #include <driverlib/gpio.h>
 #include <cstring>
 
-
 #include "SerialUARTImpl.h"
 #include "purpinsMotors.h"
 #include "purpinsComm.h"
@@ -74,6 +73,12 @@
 #include "libs/linux-mpu9150/mpu9150/mpu9150.h"
 
 #define SYSTICKS_PER_SECOND     1000
+
+#define VERSION 10
+
+// Conversions
+#define FLOAT_TO_INT  1000
+#define INT_TO_FLOAT  0.001
 
 unsigned long milliSec = 0;
 unsigned long ulClockMS=0;
@@ -130,12 +135,14 @@ int main(){
 	MAP_IntMasterDisable();
 
 	SerialAbstract * serial = new SerialUARTImpl();
-	purpinsMotors motors();
+	purpinsMotors motors;
 
 	// Get the current processor clock frequency.
 	ulClockMS = MAP_SysCtlClockGet() / (3 * 1000);
 
 	purpinsComm communication(*serial);
+	communication.setID(1);
+	communication.setDebug(1);
 
 	mpudata_t mpu;
 
@@ -151,7 +158,6 @@ int main(){
 
 	unsigned long loop_delay = (1000 / sample_rate) - 2;
 
-
 	//
 	// Configure SysTick to occur 1000 times per second
 	//
@@ -159,14 +165,87 @@ int main(){
 	MAP_SysTickIntEnable();
 	MAP_SysTickEnable();
 
-
 	MAP_IntMasterEnable();
 
-
-
+	int arg[MAX_IN_ARGS];
+	int reply_arg[MAX_OUT_ARGS];
+	int action = 0;
 
 	while(1){
 
+		//action = communication.getMsg(arg);
+
+		// If we got an action...
+		if(action > 0)
+		{
+			// Process it!!!
+			switch(action)
+			{
+				case PP_ACTION_GET_VERSION:
+					reply_arg[0] = VERSION;
+					communication.reply(PP_ACTION_GET_VERSION, reply_arg, 1);
+					break;
+
+				case PP_ACTION_DRIVE:
+					motors.setSpeed((float)(arg[0]*INT_TO_FLOAT), (float)(arg[1]*INT_TO_FLOAT));
+					break;
+
+				case PP_ACTION_DRIVE_DIRECT:
+					motors.setPWM(arg[0], arg[1]);
+					break;
+
+				case PP_ACTION_GET_ODOMETRY:
+					reply_arg[0] = 0;
+					reply_arg[1] = 0;
+					reply_arg[2] = 0;
+					communication.reply(PP_ACTION_GET_ODOMETRY, reply_arg, 3);
+					break;
+
+				case PP_ACTION_GET_ENCODER_PULSES:
+					reply_arg[0] = 0;
+					reply_arg[1] = 0;
+					communication.reply(PP_ACTION_GET_ENCODER_PULSES, reply_arg, 2);
+					break;
+
+				case PP_ACTION_GET_WHEEL_VELOCITIES:
+					reply_arg[0] = 0;
+					reply_arg[1] = 0;
+					communication.reply(PP_ACTION_GET_WHEEL_VELOCITIES, reply_arg, 2);
+					break;
+
+				case PP_ACTION_GET_DEBUG:
+					reply_arg[0] = communication.getDebug();
+					communication.reply(PP_ACTION_GET_DEBUG, reply_arg, 1);
+					break;
+
+				case PP_ACTION_SET_DEBUG:
+					communication.setDebug(arg[0]);
+					break;
+
+				case PP_ACTION_SET_PID_GAINS:
+					break;
+
+				case PP_ACTION_GET_PID_GAINS:
+					break;
+
+				case PP_ACTION_SET_ODOMETRY_CALIBRATION:
+					break;
+
+				case PP_ACTION_GET_ODOMETRY_CALIBRATION:
+					break;
+
+				case PP_ACTION_SET_ID:
+					communication.setID(arg[0]);
+					break;
+
+				case PP_ACTION_GET_ID:
+					reply_arg[0] = communication.getID();
+					communication.reply(PP_ACTION_GET_ID, reply_arg, 1);
+					break;
+
+			} // switch
+
+		} // if(action > 0)
 	}
 	return 0;
 }

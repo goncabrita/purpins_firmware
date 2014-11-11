@@ -32,7 +32,7 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *
- * Author: Gonçalo Cabrita, Bruno Antunes and Bruno Gouveia on 13/08/2012
+ * Author: Goncalo Cabrita, Bruno Antunes and Bruno Gouveia on 13/08/2012
  *********************************************************************/
 
 #ifndef __PURPINSCOMM
@@ -49,10 +49,6 @@ class SerialAbstract;
  *
  * @{
  */
-
-// Modes of operation
-#define PP_MODE_SERIAL      0
-#define PP_MODE_XBEE_API    1
 
 #define PP_STR              '@'
 #define PP_SEP              ','
@@ -79,34 +75,17 @@ enum purpinsAction
 	PP_ACTION_GET_ODOMETRY = 4,
 	PP_ACTION_GET_ENCODER_PULSES = 5,
 	PP_ACTION_GET_WHEEL_VELOCITIES = 6,
-	PP_ACTION_GET_GAS_SENSOR = 7,
-	PP_ACTION_GET_IR_BUMPER = 8,
-	PP_ACTION_GET_LINE_SENSOR = 9,
-	PP_ACTION_GET_BATTERY = 10,
 	// Debug mode
-	PP_ACTION_GET_DEBUG = 11,
-	PP_ACTION_SET_DEBUG = 12,
+	PP_ACTION_GET_DEBUG = 7,
+	PP_ACTION_SET_DEBUG = 8,
 	// Configuration
-	PP_ACTION_SET_PID_GAINS = 13,
-	PP_ACTION_GET_PID_GAINS = 14,
-	PP_ACTION_SET_ODOMETRY_CALIBRATION = 15,
-	PP_ACTION_GET_ODOMETRY_CALIBRATION = 16,
-	PP_ACTION_SET_ID = 17,
-	PP_ACTION_GET_ID = 18,
-	PP_ACTION_SET_MODE = 19,
-	PP_ACTION_GET_MODE = 20,
-	PP_ACTION_SET_GAS_CALIBRATION = 21,
-	PP_ACTION_GET_GAS_CALIBRATION = 22,
-	PP_ACTION_SET_BATTERY_TYPE = 23,
-	PP_ACTION_GET_BATTERY_TYPE = 24,
-	PP_ACTION_SET_TIMEOUT = 25,
-	PP_ACTION_GET_TIMEOUT = 26,
-	// Group messages
-	// Group 1 - Odometry, gas sensor
-	PP_ACTION_GET_GROUP_1 = 27,
-	// Group 2 - Odometry, gas sensor, IR bumper
-	PP_ACTION_GET_GROUP_2 = 28,
-	PP_ACTION_COUNT = 29
+	PP_ACTION_SET_PID_GAINS = 9,
+	PP_ACTION_GET_PID_GAINS = 10,
+	PP_ACTION_SET_ODOMETRY_CALIBRATION = 11,
+	PP_ACTION_GET_ODOMETRY_CALIBRATION = 12,
+	PP_ACTION_SET_ID = 13,
+	PP_ACTION_GET_ID = 14,
+	PP_ACTION_COUNT = 15
 };
 
 extern int MQ_ACTION_PARAM_COUNT[];

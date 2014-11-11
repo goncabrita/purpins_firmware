@@ -74,7 +74,7 @@
 	<variableList>
 		<variable>
 			<name>TIVAWARE_ROOT</name>
-			<value>file:/home/cabrita/tivaware</value>
+			<value>file:/Users/cabrita/Toolchains/TivaWare_C_Series-2.1.0.12573</value>
 		</variable>
 	</variableList>
 </projectDescription>

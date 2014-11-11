@@ -79,6 +79,14 @@ public:
 	void getSpeed(float & leftSpeed,float & rightSpeed);
 
 	/**
+	 * Set the PWM for the two motors
+	 *
+	 * @param leftPWM Left goal motor PWM
+	 * @param rightPWM Right goal motor PWM
+	 */
+	void setPWM(int leftPWM, int rightPWM);
+
+	/**
      * Get the QEI ticks for the two motors
      *
      * @param left Left encoder ticks

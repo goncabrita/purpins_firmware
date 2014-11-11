@@ -37,14 +37,14 @@ static unsigned long pwmPeriod;
 
 purpinsMotors::purpinsMotors() {
 
-	leftptr=&leftMotor;
-	rightptr=&rightMotor;
+	leftptr = &leftMotor;
+	rightptr = &rightMotor;
 
 	PID leftmotor_pid(KC,TI,TD,QEIRATE);
 	PID rightmotor_pid(KC,TI,TD,QEIRATE);
 
-	leftMotor.pid=&leftmotor_pid;
-	rightMotor.pid=&rightmotor_pid;
+	leftMotor.pid = &leftmotor_pid;
+	rightMotor.pid = &rightmotor_pid;
 
 
 	//TODO: tune settings
@@ -64,13 +64,21 @@ purpinsMotors::purpinsMotors() {
 	configurePWM();
 }
 
-void purpinsMotors::setSpeed(float leftSpeed, float rightSpeed) {
+void purpinsMotors::setSpeed(float leftSpeed, float rightSpeed)
+{
 
 }
 
-void purpinsMotors::getSpeed(float& leftSpeed, float& rightSpeed) {
+void purpinsMotors::getSpeed(float& leftSpeed, float& rightSpeed)
+{
 
 
+}
+
+void purpinsMotors::setPWM(int leftPWM, int rightPWM)
+{
+	leftptr->pwm_value = leftPWM;
+	rightptr->pwm_value = rightPWM;
 }
 
 void purpinsMotors::getQEITicks(int32_t& left, int32_t& right) {
@@ -147,7 +155,6 @@ void purpinsMotors::configurePWM(){
 
 	MAP_GPIOPinTypePWM(GPIO_PORTF_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 	MAP_GPIOPinTypePWM(GPIO_PORTC_BASE, GPIO_PIN_4);
-
 
 	//gen 3 for m0pwm6
 	MAP_PWMGenConfigure(PWM0_BASE, PWM_GEN_3, PWM_GEN_MODE_UP_DOWN | PWM_GEN_MODE_NO_SYNC);
