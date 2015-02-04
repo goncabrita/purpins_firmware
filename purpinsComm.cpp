@@ -38,10 +38,6 @@
 #include "purpinsComm.h"
 #include "SerialAbstract.h"
 
-#include "driverlib/uart.h"
-#include "driverlib/pin_map.h"
-#include "utils/uartstdio.h"
-
 extern "C"{
 #include "utils/ustdlib.h"
 extern  unsigned long millis(void);
@@ -62,107 +58,110 @@ purpinsComm::purpinsComm(SerialAbstract & _serial):serial(_serial)
 int purpinsComm::getMsg(int * argv)
 {
 	// If data is available...
-	//if(serial.available())
-	//{
+	if(serial.available())
+	{
 		// Read a uint8_t from the serial port
-		//uint8_t newByte = serial.read();
-
-		//serial.println("xplim");
+		uint8_t newByte = serial.read();
 
 		// Got a start uint8_t!!!
-//		if(newByte == PP_STR)
-//		{
-//			start_time = millis();
-//
-//			// If we are waiting for data start a new message
-//			if(serial_port_status == AWATING_DATA)
-//			{
-//				serial_port_status = GETTING_DATA;
-//
-//				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-//				serial_buffer[0] = newByte;
-//				serial_buffer_size = 1;
-//			}
-//			// Otherwise this is an error!
-//			else
-//			{
-//				if(debug) serial.println("[ERROR] Got start uint8_t in the middle of a message!");
-//				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-//				serial_port_status = AWATING_DATA;
-//			}
-//		}
-//		// Got an end uint8_t and a message is being constructed
-//		else if(newByte == PP_END && serial_port_status == GETTING_DATA)
-//		{
-//			if(serial_buffer_size < SERIAL_BUFFER_SIZE-1)
-//			{
-//				serial_buffer[serial_buffer_size] = newByte;
-//				serial_buffer_size++;
-//
-//				serial_buffer[serial_buffer_size] = '\0';
-//				serial_buffer_size++;
-//
-//				if(debug)
-//				{
-//					usprintf(debug_msg,"[INFO] Got message: %s %ul ms",serial_buffer,millis()-start_time);
-//					serial.println(debug_msg);
-//				}
-//
-//				serial_port_status = AWATING_DATA;
-//
-//				// Next parse incoming data...
-//				int msg_id = getValue(1);
-//				if(msg_id != id && msg_id != 0) return 0;
-//
-//				int action = getValue(next_separator+1);
-//
-//				if(action == -1 && debug) serial.println("[ERROR] Could not find an action in the message!");
-//
-//				if(action > 0 && action < PP_ACTION_COUNT)
-//				{
-//					for(int i=0 ; i<PP_ACTION_PARAM_COUNT[action-1] ; i++)
-//					{
-//						argv[i] = getValue(next_separator+1);
-//
-//						if(argv[i] == -1)
-//						{
-//							if(debug) serial.println("[ERROR] Insufficient number of parameters for this action!");
-//							return 0;
-//						}
-//					}
-//					return action;
-//				}
-//				else
-//				{
-//					if(debug){
-//						usprintf(debug_msg,"[ERROR] Unknown action: %d",action);
-//						serial.println(debug_msg);
-//					}
-//				}
-//			}
-//			else
-//			{
-//				if(debug) serial.println("[ERROR] Buffer size exceeded!");
-//				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-//				serial_port_status = AWATING_DATA;
-//			}
-//		}
-//		// Got a uint8_t and a message is being constructed
-//		else if(serial_port_status == GETTING_DATA)
-//		{
-//			if(serial_buffer_size < SERIAL_BUFFER_SIZE)
-//			{
-//				serial_buffer[serial_buffer_size] = newByte;
-//				serial_buffer_size++;
-//			}
-//			else
-//			{
-//				if(debug) serial.println("[ERROR] Buffer size exceeded!");
-//				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-//				serial_port_status = AWATING_DATA;
-//			}
-//		}
-	//}
+		if(newByte == PP_STR)
+		{
+			start_time = millis();
+
+			// If we are waiting for data start a new message
+			if(serial_port_status == AWATING_DATA)
+			{
+				serial_port_status = GETTING_DATA;
+
+				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
+				serial_buffer[0] = newByte;
+				serial_buffer_size = 1;
+			}
+			// Otherwise this is an error!
+			else
+			{
+				if(debug) serial.println("[ERROR] Got start uint8_t in the middle of a message!");
+				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
+				serial_port_status = AWATING_DATA;
+			}
+		}
+		// Got an end uint8_t and a message is being constructed
+		else if(newByte == PP_END && serial_port_status == GETTING_DATA)
+		{
+			if(serial_buffer_size < SERIAL_BUFFER_SIZE-1)
+			{
+				serial_buffer[serial_buffer_size] = newByte;
+				serial_buffer_size++;
+
+				serial_buffer[serial_buffer_size] = '\0';
+				serial_buffer_size++;
+
+				if(debug)
+				{
+					usprintf(debug_msg,"[INFO] Got message: %s %d ms", serial_buffer, millis()-start_time);
+					serial.println(debug_msg);
+				}
+
+				serial_port_status = AWATING_DATA;
+
+				// Next parse incoming data...
+				int msg_id = getValue(0);
+				if(msg_id != id && msg_id != 0)
+				{
+					usprintf(debug_msg,"[INFO] The message id %d does not match this Purpins id %d", msg_id, id);
+					serial.println(debug_msg);
+					return 0;
+				}
+
+				int action = getValue(next_separator+1);
+
+				if(action == -1 && debug) serial.println("[ERROR] Could not find an action in the message!");
+
+				if(action > 0 && action < PP_ACTION_COUNT)
+				{
+					for(int i=0 ; i<PP_ACTION_PARAM_COUNT[action-1] ; i++)
+					{
+						argv[i] = getValue(next_separator+1);
+
+						if(argv[i] == -1)
+						{
+							if(debug) serial.println("[ERROR] Insufficient number of parameters for this action!");
+							return 0;
+						}
+					}
+					return action;
+				}
+				else
+				{
+					if(debug){
+						usprintf(debug_msg,"[ERROR] Unknown action: %d",action);
+						serial.println(debug_msg);
+					}
+				}
+			}
+			else
+			{
+				if(debug) serial.println("[ERROR] Buffer size exceeded!");
+				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
+				serial_port_status = AWATING_DATA;
+			}
+		}
+		// Got a uint8_t and a message is being constructed
+		else if(serial_port_status == GETTING_DATA)
+		{
+			if(serial_buffer_size < SERIAL_BUFFER_SIZE)
+			{
+				serial_buffer[serial_buffer_size] = newByte;
+				serial_buffer_size++;
+			}
+			else
+			{
+				if(debug) serial.println("[ERROR] Buffer size exceeded!");
+				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
+				serial_port_status = AWATING_DATA;
+			}
+		}
+	}
 
 	return 0;
 }
@@ -171,17 +170,22 @@ void purpinsComm::reply(int action, int * argv, int argc)
 {
 
 	char reply_string[20];
-	usprintf(reply_string,"%c%d%c%d",PP_STR,id,PP_SEP,action);
+	usprintf(reply_string, "%c%d%c%d", PP_STR, id, PP_SEP, action);
+
+	unsigned int len;
 
 	for(int i=0; i<argc ; i++)
 	{
 		char temp[20];
-		ustrncpy(temp,reply_string,ustrlen(reply_string));
-		usprintf(reply_string,"%s%c%d",temp,argv[i],PP_SEP);
+		len = ustrlen(reply_string);
+		ustrncpy(temp, reply_string, len);
+		temp[len] = 0;
+		usprintf(reply_string, "%s%c%d", temp, PP_SEP, argv[i]);
 	}
 
-	unsigned int len = ustrlen(reply_string);
+	len = ustrlen(reply_string);
 	reply_string[len] = PP_END;
+	reply_string[len+1] = 0;
 
 	serial.println(reply_string);
 }
@@ -204,7 +208,7 @@ int purpinsComm::getValue(int start_index)
 
 	if(i == 0) return -1;
 
-	return (int)ustrtoul(data,0,0);
+	return (int)ustrtoul(data, 0, 0);
 }
 
 void purpinsComm::setID(uint8_t new_id)

@@ -39,6 +39,8 @@ SerialUARTImpl::SerialUARTImpl() {
 	MAP_GPIOPinConfigure(GPIO_PA1_U0TX);
 	MAP_GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 	UARTStdioConfig(0,115200,MAP_SysCtlClockGet());
+
+	UARTEchoSet(false);
 }
 
 

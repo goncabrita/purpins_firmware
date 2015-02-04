@@ -18,8 +18,6 @@
 
 #include <stdint.h>
 
-class PID;
-
 //MotorControl constants
 
 #define PWM_FREQUENCY (20000)           /**< motor pwm frequency in Hz */
@@ -39,7 +37,6 @@ class PID;
  * pp_motor structure used for convenience with all the motor variables
  */
 typedef struct _motor{
-	PID * pid;
 	int32_t vel; //measured speed
 	int32_t goal_vel; //requested speed
 	int32_t pwm_value; //Corresponding speed

@@ -115,8 +115,8 @@ unsigned long millis(void)
 
 }
 
-int main(){
-
+int main()
+{
 	//
 	// Enable lazy stacking for interrupt handlers.  This allows floating-point
 	// instructions to be used within interrupt handlers, but at the expense of
@@ -128,21 +128,20 @@ int main(){
 	//
 	// Set the clocking to run from the PLL at 50MHZ, change to SYSCTL_SYSDIV_2_5 for 80MHz if neeeded
 	//
-	MAP_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
-			SYSCTL_XTAL_16MHZ);
-
-
+	MAP_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 	MAP_IntMasterDisable();
 
 	SerialAbstract * serial = new SerialUARTImpl();
-	purpinsMotors motors;
-
-	// Get the current processor clock frequency.
-	ulClockMS = MAP_SysCtlClockGet() / (3 * 1000);
-
 	purpinsComm communication(*serial);
 	communication.setID(1);
 	communication.setDebug(1);
+
+	purpinsMotors motors;
+
+	//
+	// Get the current processor clock frequency.
+	//
+	ulClockMS = MAP_SysCtlClockGet() / (3 * 1000);
 
 	mpudata_t mpu;
 
@@ -173,7 +172,7 @@ int main(){
 
 	while(1){
 
-		//action = communication.getMsg(arg);
+		action = communication.getMsg(arg);
 
 		// If we got an action...
 		if(action > 0)

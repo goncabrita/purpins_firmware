@@ -28,9 +28,6 @@
 
 #include "purpinsMotors.h"
 
-#include "pid.h"
-
-
 static pp_motor * leftptr;
 static pp_motor * rightptr;
 static unsigned long pwmPeriod;
@@ -39,26 +36,6 @@ purpinsMotors::purpinsMotors() {
 
 	leftptr = &leftMotor;
 	rightptr = &rightMotor;
-
-	PID leftmotor_pid(KC,TI,TD,QEIRATE);
-	PID rightmotor_pid(KC,TI,TD,QEIRATE);
-
-	leftMotor.pid = &leftmotor_pid;
-	rightMotor.pid = &rightmotor_pid;
-
-
-	//TODO: tune settings
-	leftMotor.pid->setInputLimits(-100,100);
-	leftMotor.pid->setOutputLimits(-255,255);
-	leftMotor.pid->setBias(0.0);
-	leftMotor.pid->setMode(AUTO_MODE);
-
-	//TODO: tune settings
-    rightMotor.pid->setInputLimits(-100,100);
-	rightMotor.pid->setOutputLimits(-255,255);
-	rightMotor.pid->setBias(0.0);
-    rightMotor.pid->setMode(AUTO_MODE);
-
 
 	configureQEI();
 	configurePWM();
@@ -179,7 +156,6 @@ void purpinsMotors::configurePWM(){
 	MAP_PWMGenEnable(PWM1_BASE, PWM_GEN_3);
 	MAP_PWMGenEnable(PWM0_BASE, PWM_GEN_3);
 
-
 	// Turn on the Output pins
 	MAP_PWMOutputState(PWM1_BASE, PWM_OUT_5_BIT, true);
 	MAP_PWMOutputState(PWM1_BASE, PWM_OUT_6_BIT, true);
@@ -193,14 +169,7 @@ void motorsLeftQEIHandler() {
 
 	MAP_QEIIntClear(QEI0_BASE,QEI_INTTIMER);
 
-
 	leftptr->vel=MAP_QEIVelocityGet(QEI0_BASE)*MAP_QEIDirectionGet(QEI0_BASE);
-
-	leftptr->pid->setSetPoint(leftptr->goal_vel);
-	leftptr->pid->setProcessValue(leftptr->vel);
-	leftptr->pwm_value = leftptr->pid->compute()*(pwmPeriod/255);
-
-	//pwm_value = leftmotor_pid.run(goal_vel,vel)*(ulPeriod/255);
 
 	if (leftptr->pwm_value == 0){
 		MAP_PWMPulseWidthSet(PWM1_BASE, PWM_OUT_6 , 0);
@@ -219,14 +188,7 @@ void motorsRightQEIHandler() {
 
 	MAP_QEIIntClear(QEI1_BASE,QEI_INTTIMER);
 
-
 	rightptr->vel=MAP_QEIVelocityGet(QEI1_BASE)*MAP_QEIDirectionGet(QEI1_BASE);
-
-	rightptr->pid->setSetPoint(rightptr->goal_vel);
-	rightptr->pid->setProcessValue(rightptr->vel);
-	rightptr->pwm_value = rightptr->pid->compute()*(pwmPeriod/255);
-
-	//pwm_value = leftmotor_pid.run(goal_vel,vel)*(ulPeriod/255);
 
 	if (rightptr->pwm_value == 0){
 		MAP_PWMPulseWidthSet(PWM0_BASE, PWM_OUT_6 , 0);
