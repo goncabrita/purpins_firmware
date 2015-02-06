@@ -67,51 +67,49 @@
 #include <cstring>
 
 #include "SerialUARTImpl.h"
-#include "purpinsMotors.h"
 #include "purpinsComm.h"
+#include "purpinsRobot.h"
 
 #include "libs/linux-mpu9150/mpu9150/mpu9150.h"
 
-#define SYSTICKS_PER_SECOND     1000
+#define SYSTICKS_PER_SECOND 1000
 
-#define VERSION 10
+#define VERSION 11
 
 // Conversions
-#define FLOAT_TO_INT  1000
-#define INT_TO_FLOAT  0.001
+#define FLOAT_TO_INT 1000
+#define INT_TO_FLOAT 0.001
 
 unsigned long milliSec = 0;
-unsigned long ulClockMS=0;
+unsigned long ulClockMS = 0;
 
-extern "C" {
-
-int decimalOf(float val)
+extern "C"
 {
-	int retval = (val-(int)val)*100;
+	int decimalOf(float val)
+	{
+		int retval = (val-(int)val)*100;
+		return (retval>0)?retval:-retval;
+	}
 
-	return (retval>0)?retval:-retval;
-}
+	void delayMSec(unsigned long msec)
+	{
+		MAP_SysCtlDelay(ulClockMS*msec);
+	}
 
+	void delayuSec(unsigned long usec)
+	{
+		MAP_SysCtlDelay((ulClockMS/1000)*usec);
+	}
 
-void delayMSec(unsigned long msec)
-{
-	MAP_SysCtlDelay(ulClockMS*msec);
-}
+	void SysTickHandler(void)
+	{
+		milliSec++;
+	}
 
-void delayuSec(unsigned long usec)
-{
-	MAP_SysCtlDelay((ulClockMS/1000)*usec);
-}
-
-void SysTickHandler(void)
-{
-	milliSec++;
-}
-
-unsigned long millis(void)
-{
-	return milliSec;
-}
+	unsigned long millis(void)
+	{
+		return milliSec;
+	}
 
 }
 
@@ -136,7 +134,7 @@ int main()
 	communication.setID(1);
 	communication.setDebug(1);
 
-	purpinsMotors motors;
+	purpinsRobot purpins;
 
 	//
 	// Get the current processor clock frequency.
@@ -147,10 +145,11 @@ int main()
 
 	unsigned long sample_rate = 10 ;
 
-	//mpu9150_set_debug(1);
+	//mpu9150_set_debug(1)
 	serial->println("Initializing MPU_6050...");
 
-	if (mpu9150_init(0,sample_rate, 0)){
+	if(mpu9150_init(0,sample_rate, 0))
+	{
 		serial->println("MPU6050 - MPU6050 connection failed");
 	}
 	memset(&mpu, 0, sizeof(mpudata_t));
@@ -170,8 +169,8 @@ int main()
 	int reply_arg[MAX_OUT_ARGS];
 	int action = 0;
 
-	while(1){
-
+	while(1)
+	{
 		action = communication.getMsg(arg);
 
 		// If we got an action...
@@ -186,29 +185,29 @@ int main()
 					break;
 
 				case PP_ACTION_DRIVE:
-					motors.setSpeed((float)(arg[0]*INT_TO_FLOAT), (float)(arg[1]*INT_TO_FLOAT));
+					purpins.setMotorSpeeds((float)(arg[0]*INT_TO_FLOAT), (float)(arg[1]*INT_TO_FLOAT));
 					break;
 
 				case PP_ACTION_DRIVE_DIRECT:
-					motors.setPWM(arg[0], arg[1]);
+					purpins.setPWM(arg[0], arg[1]);
 					break;
 
 				case PP_ACTION_GET_ODOMETRY:
-					reply_arg[0] = 0;
-					reply_arg[1] = 0;
-					reply_arg[2] = 0;
+					reply_arg[0] = (int)(purpins.getX()*FLOAT_TO_INT);
+					reply_arg[1] = (int)(purpins.getY()*FLOAT_TO_INT);
+					reply_arg[2] = (int)(purpins.getYaw()*FLOAT_TO_INT);
 					communication.reply(PP_ACTION_GET_ODOMETRY, reply_arg, 3);
 					break;
 
 				case PP_ACTION_GET_ENCODER_PULSES:
-					reply_arg[0] = 0;
-					reply_arg[1] = 0;
+					reply_arg[0] = (int)(purpins.getLeftTicks());
+					reply_arg[1] = (int)(purpins.getRightTicks());
 					communication.reply(PP_ACTION_GET_ENCODER_PULSES, reply_arg, 2);
 					break;
 
 				case PP_ACTION_GET_WHEEL_VELOCITIES:
-					reply_arg[0] = 0;
-					reply_arg[1] = 0;
+					reply_arg[0] = (int)(purpins.getLeftMotorSpeed()*FLOAT_TO_INT);
+					reply_arg[1] = (int)(purpins.getRightMotorSpeed()*FLOAT_TO_INT);
 					communication.reply(PP_ACTION_GET_WHEEL_VELOCITIES, reply_arg, 2);
 					break;
 
