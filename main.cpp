@@ -65,20 +65,14 @@
 #include <driverlib/pin_map.h>
 #include <driverlib/gpio.h>
 #include <cstring>
-
 #include "SerialUARTImpl.h"
 #include "purpinsComm.h"
 #include "purpinsRobot.h"
-
 #include "libs/linux-mpu9150/mpu9150/mpu9150.h"
-
-#define SYSTICKS_PER_SECOND 1000
 
 #define VERSION 11
 
-// Conversions
-#define FLOAT_TO_INT 1000
-#define INT_TO_FLOAT 0.001
+#define SYSTICKS_PER_SECOND 1000
 
 unsigned long milliSec = 0;
 unsigned long ulClockMS = 0;
@@ -131,28 +125,21 @@ int main()
 
 	SerialAbstract * serial = new SerialUARTImpl();
 	purpinsComm communication(*serial);
-	communication.setID(1);
-	communication.setDebug(1);
 
 	purpinsRobot purpins;
+
+	//
+	// MPU6050 configuration
+	//
+	mpudata_t mpu;
+	unsigned long sample_rate = 10 ;
+	bool mpu_available = mpu9150_init(0, sample_rate, 0);
+	memset(&mpu, 0, sizeof(mpudata_t));
 
 	//
 	// Get the current processor clock frequency.
 	//
 	ulClockMS = MAP_SysCtlClockGet() / (3 * 1000);
-
-	mpudata_t mpu;
-
-	unsigned long sample_rate = 10 ;
-
-	//mpu9150_set_debug(1)
-	serial->println("Initializing MPU_6050...");
-
-	if(mpu9150_init(0,sample_rate, 0))
-	{
-		serial->println("MPU6050 - MPU6050 connection failed");
-	}
-	memset(&mpu, 0, sizeof(mpudata_t));
 
 	unsigned long loop_delay = (1000 / sample_rate) - 2;
 
@@ -165,87 +152,126 @@ int main()
 
 	MAP_IntMasterEnable();
 
-	int arg[MAX_IN_ARGS];
-	int reply_arg[MAX_OUT_ARGS];
-	int action = 0;
+	uint8_t data[SERIAL_BUFFER_SIZE];
+	uint8_t action;
 
 	while(1)
 	{
-		action = communication.getMsg(arg);
+		action = communication.getMsg(data);
 
 		// If we got an action...
 		if(action > 0)
 		{
 			// Process it!!!
-			switch(action)
+			if(action == PP_ACTION_GET_VERSION)
 			{
-				case PP_ACTION_GET_VERSION:
-					reply_arg[0] = VERSION;
-					communication.reply(PP_ACTION_GET_VERSION, reply_arg, 1);
-					break;
+				uint8_t version = VERSION;
+				communication.sendMsg(PP_ACTION_GET_VERSION, (void*)(&version), 1);
+			}
+			else if(action == PP_ACTION_DRIVE)
+			{
+				RobotSpeed speed;
+				communication.parse(action, data, (void*)(&speed));
+				purpins.setSpeed(&speed);
+			}
+			else if(action == PP_ACTION_DRIVE_MOTORS)
+			{
+				MotorSpeeds motor_speeds;
+				communication.parse(action, data, (void*)(&motor_speeds));
+				purpins.setMotorSpeeds(&motor_speeds);
+			}
+			else if(action == PP_ACTION_DRIVE_PWM)
+			{
+				MotorPWMs motor_pwms;
+				communication.parse(action, data, (void*)(&motor_pwms));
+				purpins.setPWM(&motor_pwms);
+			}
+			else if(action == PP_ACTION_GET_ODOMETRY)
+			{
+				Pose odometry;
+				purpins.getOdometry(&odometry);
+				communication.sendMsg(PP_ACTION_GET_ODOMETRY, (void*)(&odometry), sizeof(odometry));
+			}
+			else if(action == PP_ACTION_GET_MOTOR_SPEEDS)
+			{
+				MotorSpeeds speed;
+				purpins.getMotorSpeeds(&speed);
+				communication.sendMsg(PP_ACTION_GET_MOTOR_SPEEDS, (void*)(&speed), sizeof(speed));
+			}
+			else if(action == PP_ACTION_GET_ENCODER_PULSES)
+			{
+				EncoderPulses encoder_pulses;
+				purpins.getEncoderTicks(&encoder_pulses);
+				communication.sendMsg(PP_ACTION_GET_ENCODER_PULSES, (void*)(&encoder_pulses), sizeof(encoder_pulses));
+			}
+			else if(action == PP_ACTION_GET_IMU)
+			{
+				if(mpu_available)
+				{
+					IMU imu_data;
+					imu_data.orientation_x = mpu.fusedQuat[0];
+					imu_data.orientation_y = mpu.fusedQuat[1];
+					imu_data.orientation_z = mpu.fusedQuat[2];
+					imu_data.orientation_w = mpu.fusedQuat[4];
+					imu_data.linear_acceleration_x = mpu.calibratedAccel[0];
+					imu_data.linear_acceleration_y = mpu.calibratedAccel[1];
+					imu_data.linear_acceleration_z = mpu.calibratedAccel[2];
+					imu_data.angular_velocity_x = mpu.calibratedMag[0];
+					imu_data.angular_velocity_y = mpu.calibratedMag[1];
+					imu_data.angular_velocity_z = mpu.calibratedMag[2];
+					communication.sendMsg(PP_ACTION_GET_IMU, (void*)(&imu_data), sizeof(imu_data));
+				}
+				else
+				{
+					communication.error(PP_ERROR_SENSOR_NOT_AVAILABLE);
+				}
+			}
+			else if(action == PP_ACTION_GET_IR_SENSORS)
+			{
+				// TODO: Add the IR sensors
+			}
+			else if(action == PP_ACTION_GET_GAS_SENSOR)
+			{
+				// TODO: Add the gas sensor
+			}
+			else if(action == PP_ACTION_SET_SENSORS_PACK)
+			{
 
-				case PP_ACTION_DRIVE:
-					purpins.setMotorSpeeds((float)(arg[0]*INT_TO_FLOAT), (float)(arg[1]*INT_TO_FLOAT));
-					break;
+			}
+			else if(action == PP_ACTION_GET_SENSORS_PACK)
+			{
 
-				case PP_ACTION_DRIVE_DIRECT:
-					purpins.setPWM(arg[0], arg[1]);
-					break;
+			}
+			else if(action == PP_ACTION_SET_SENSOR_STREAMING)
+			{
 
-				case PP_ACTION_GET_ODOMETRY:
-					reply_arg[0] = (int)(purpins.getX()*FLOAT_TO_INT);
-					reply_arg[1] = (int)(purpins.getY()*FLOAT_TO_INT);
-					reply_arg[2] = (int)(purpins.getYaw()*FLOAT_TO_INT);
-					communication.reply(PP_ACTION_GET_ODOMETRY, reply_arg, 3);
-					break;
+			}
+			else if(action == PP_ACTION_SET_GLOBAL_POSE)
+			{
 
-				case PP_ACTION_GET_ENCODER_PULSES:
-					reply_arg[0] = (int)(purpins.getLeftTicks());
-					reply_arg[1] = (int)(purpins.getRightTicks());
-					communication.reply(PP_ACTION_GET_ENCODER_PULSES, reply_arg, 2);
-					break;
+			}
+			else if(action == PP_ACTION_SET_NEIGHBORS_POSES)
+			{
 
-				case PP_ACTION_GET_WHEEL_VELOCITIES:
-					reply_arg[0] = (int)(purpins.getLeftMotorSpeed()*FLOAT_TO_INT);
-					reply_arg[1] = (int)(purpins.getRightMotorSpeed()*FLOAT_TO_INT);
-					communication.reply(PP_ACTION_GET_WHEEL_VELOCITIES, reply_arg, 2);
-					break;
-
-				case PP_ACTION_GET_DEBUG:
-					reply_arg[0] = communication.getDebug();
-					communication.reply(PP_ACTION_GET_DEBUG, reply_arg, 1);
-					break;
-
-				case PP_ACTION_SET_DEBUG:
-					communication.setDebug(arg[0]);
-					break;
-
-				case PP_ACTION_SET_PID_GAINS:
-					break;
-
-				case PP_ACTION_GET_PID_GAINS:
-					break;
-
-				case PP_ACTION_SET_ODOMETRY_CALIBRATION:
-					break;
-
-				case PP_ACTION_GET_ODOMETRY_CALIBRATION:
-					break;
-
-				case PP_ACTION_SET_ID:
-					communication.setID(arg[0]);
-					break;
-
-				case PP_ACTION_GET_ID:
-					reply_arg[0] = communication.getID();
-					communication.reply(PP_ACTION_GET_ID, reply_arg, 1);
-					break;
-
-			} // switch
+			}
+			else if(action == PP_ACTION_SET_PID_GAINS)
+			{
+				// TODO: Finish this
+			}
+			else if(action == PP_ACTION_GET_PID_GAINS)
+			{
+				// TODO: Finish this
+			}
+			else if(action == PP_ACTION_SET_ODOMETRY_CALIBRATION)
+			{
+				// TODO: Finish this
+			}
+			else if(action == PP_ACTION_GET_ODOMETRY_CALIBRATION)
+			{
+				// TODO: Finish this
+			}
 
 		} // if(action > 0)
 	}
 	return 0;
 }
-
-

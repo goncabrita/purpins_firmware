@@ -35,11 +35,12 @@
 * Author: Gonçalo Cabrita and Bruno Gouveia on 16/08/2012
 *********************************************************************/
 
+#ifndef __PURPINSROBOT
+#define __PURPINSROBOT
+
 #include <stdint.h>
 #include "pid.h"
-
-#ifndef PURPINS_ROBOT_H_
-#define PURPINS_ROBOT_H_
+#include "purpinsDataTypes.h"
 
 #define PWM_FREQUENCY (20000)           	/**< Motor PWM frequency in Hz */
 #define QEI_LOOP_FREQUENCY (40)           	/**< QEI loop frequency in Hz */
@@ -84,34 +85,30 @@ public:
 	/**
 	 * Set the linear and angular goal speeds for the robot
 	 *
-	 * @param linear_speed Linear goal speed in m/s
-	 * @param angular_speed Angular goal speed in rad/s
+	 * @param speed Robot goal speed, linear in m/s, angular in rad/s
 	 */
-	void setSpeed(float linear_speed, float angular_speed);
+	void setSpeed(RobotSpeed * speed);
 
 	/**
 	 * Get the current linear and angular speeds for the robot
 	 *
-	 *  @param linear_speed Linear robot speed in m/s
-	 *  @param angular_speed Angular robot speed in rad/s
+	 *  @param speed Robot speed, linear in m/s, angular in rad/s
 	 */
-	void getSpeed(float & linear_speed,float & angular_speed);
+	void getSpeed(RobotSpeed * speed);
 
     /**
      * Set the goal speeds for the two motors
      *
-     * @param left_speed Left goal motor speed in rad/s
-     * @param right_speed Right goal motor speed in rad/s
+     * @param motor_speeds Left and right goal motor speeds in rad/s
      */
-	void setMotorSpeeds(float left_speed, float right_speed);
+	void setMotorSpeeds(MotorSpeeds * motor_speeds);
 
 	/**
      * Get the current motor speeds in rad/s
      *
-     *  @param left_speed Left motor speed in rad/s
-     *  @param right_speed Right motor speed in rad/s
+     *  @param motor_speeds Left and right motor speeds in rad/s
      */
-	void getMotorSpeeds(float & left_speed,float & right_speed);
+	void getMotorSpeeds(MotorSpeeds * motor_speeds);
 	/**
 	 * Get the left motor speed in rad/s
 	 *
@@ -128,10 +125,9 @@ public:
 	/**
 	 * Set the PWM for the two motors
 	 *
-	 * @param left_pwm Left goal motor PWM
-	 * @param right_pwm Right goal motor PWM
+	 * @param pwm Motors PWM
 	 */
-	void setPWM(int left_pwm, int right_pwm);
+	void setPWM(MotorPWMs * pwm);
 
 	/**
 	 * Calculates the odometry of the robot
@@ -141,28 +137,27 @@ public:
 	/**
 	 * Get the odometry of the robot
 	 *
-	 * @param left_ticks Left encoder ticks
-	 * @param right_ticks Right encoder ticks
+	 * @param odometry Robot odometry
 	 */
-	void getOdometry(float & x, float & y, float & yaw);
+	void getOdometry(Pose * odometry);
 	/**
 	 * Get the robot odometry in x
 	 *
 	 * @return X in m
 	 */
-	float getX() {return x_;};
+	float getX() {return odometry_.x;};
 	/**
 	 * Get the robot odometry in y
 	 *
 	 * @return Y in m
 	 */
-	float getY() {return y_;};
+	float getY() {return odometry_.y;};
 	/**
 	 * Get the robot odometry in yaw
 	 *
 	 * @return Yaw in rad
 	 */
-	float getYaw() {return yaw_;};
+	float getYaw() {return odometry_.yaw;};
 
 	/**
 	 * Reset the odometry of the robot
@@ -172,10 +167,9 @@ public:
 	/**
      * Get the QEI ticks for the two motors
      *
-     * @param left_ticks Left encoder ticks
-     * @param right_ticks Right encoder ticks
+     * @param encoder_pulses Left and right encoder ticks
      */
-	void getEncoderTicks(int32_t & left_ticks, int32_t & right_ticks);
+	void getEncoderTicks(EncoderPulses * encoder_pulses);
 	/**
 	 * Get the left encoder ticks
 	 *
@@ -193,9 +187,8 @@ private:
 	PurpinsMotor left_motor_;
 	PurpinsMotor right_motor_;
 
-	float x_;
-	float y_;
-	float yaw_;
+	Pose odometry_;
+	Pose global_pose_;
 
 	/**
      * Configure the QEI

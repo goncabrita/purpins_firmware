@@ -21,19 +21,21 @@ public:
 	 * returns the number of bytes available to read
 	 * \return returns the number of bytes available
 	 */
-	virtual unsigned int available()= 0;
+	virtual unsigned int available() = 0;
 
 	/**
 	 * read a single byte
 	 * \return char from the communication device
 	 */
-	virtual char read()= 0;
+	virtual char read() = 0;
+
+	virtual void write(const char * buffer, unsigned int length) = 0;
 
 	/**
 	 * write a string to the communication device
 	 * \param string string to be written to the communication device
 	 */
-	virtual void println(const char * string)= 0;
+	virtual void println(const char * string) = 0;
 
 	virtual ~SerialAbstract();
 

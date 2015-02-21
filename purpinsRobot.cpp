@@ -97,40 +97,42 @@ purpinsRobot::purpinsRobot()
 	configurePWM();
 }
 
-void purpinsRobot::setSpeed(float linear_speed, float angular_speed)
+void purpinsRobot::setSpeed(RobotSpeed * speed)
 {
-	float left_speed = linear_speed - PURPINS_AXLE_LENGTH * angular_speed / 2.0;
-	float right_speed = linear_speed + PURPINS_AXLE_LENGTH * angular_speed / 2.0;
+	MotorSpeeds motor_speeds;
 
-	setMotorSpeeds(left_speed, right_speed);
+	motor_speeds.left = speed->linear - PURPINS_AXLE_LENGTH * speed->angular / 2.0;
+	motor_speeds.right = speed->linear + PURPINS_AXLE_LENGTH * speed->angular / 2.0;
+
+	setMotorSpeeds(&motor_speeds);
 }
 
-void purpinsRobot::getSpeed(float & linear_speed,float & angular_speed)
+void purpinsRobot::getSpeed(RobotSpeed * speed)
 {
-	linear_speed = (right_motor_.speed + left_motor_.speed) / 2.0;
-	angular_speed = (right_motor_.speed - left_motor_.speed) / PURPINS_AXLE_LENGTH;
+	speed->linear = (right_motor_.speed + left_motor_.speed) / 2.0;
+	speed->angular = (right_motor_.speed - left_motor_.speed) / PURPINS_AXLE_LENGTH;
 }
 
-void purpinsRobot::setMotorSpeeds(float left_speed, float right_speed)
+void purpinsRobot::setMotorSpeeds(MotorSpeeds * motor_speeds)
 {
 	left_motor_.closed_loop = true;
-	left_motor_.target_speed = left_speed;
+	left_motor_.target_speed = motor_speeds->left;
 	right_motor_.closed_loop = false;
-	right_motor_.target_speed = right_speed;
+	right_motor_.target_speed = motor_speeds->right;
 }
 
-void purpinsRobot::getMotorSpeeds(float & left_speed,float & right_speed)
+void purpinsRobot::getMotorSpeeds(MotorSpeeds * motor_speeds)
 {
-	left_speed = left_motor_.speed;
-	right_speed = right_motor_.speed;
+	motor_speeds->left = left_motor_.speed;
+	motor_speeds->right = right_motor_.speed;
 }
 
-void purpinsRobot::setPWM(int left_pwm, int right_pwm)
+void purpinsRobot::setPWM(MotorPWMs * pwm)
 {
 	left_motor_.closed_loop = false;
-	left_motor_.pwm = left_pwm;
+	left_motor_.pwm = pwm->left;
 	right_motor_.closed_loop = false;
-	right_motor_.pwm = right_pwm;
+	right_motor_.pwm = pwm->right;
 }
 
 void purpinsRobot::calculateOdometry()
@@ -141,32 +143,30 @@ void purpinsRobot::calculateOdometry()
 	double distance = (right_ticks + left_ticks) * PURPINS_TICKS_TO_M / 2.0;
 	double angle = (right_ticks - left_ticks) * PURPINS_TICKS_TO_M / PURPINS_AXLE_LENGTH;
 
-	yaw_ += angle;
-	x_ += distance*cos(yaw_);
-	y_ += distance*sin(yaw_);
+	odometry_.yaw += angle;
+	odometry_.x += distance*cos(odometry_.yaw);
+	odometry_.y += distance*sin(odometry_.yaw);
 
 	left_motor_.last_ticks = left_motor_.ticks;
 	right_motor_.last_ticks = right_motor_.ticks;
 }
 
-void purpinsRobot::getOdometry(float & x, float & y, float & yaw)
+void purpinsRobot::getOdometry(Pose * odometry)
 {
-	x = x_;
-	y = y_;
-	yaw = yaw_;
+	odometry = &odometry_;
 }
 
 void purpinsRobot::resetOdometry()
 {
-	x_ = 0.0;
-	y_ = 0.0;
-	yaw_ = 0.0;
+	odometry_.x = 0.0;
+	odometry_.y = 0.0;
+	odometry_.yaw = 0.0;
 }
 
-void purpinsRobot::getEncoderTicks(int32_t & left_ticks, int32_t & right_ticks)
+void purpinsRobot::getEncoderTicks(EncoderPulses * encoder_pulses)
 {
-	left_ticks = left_motor_.ticks;
-	right_ticks = right_motor_.ticks;
+	encoder_pulses->left = left_motor_.ticks;
+	encoder_pulses->right = right_motor_.ticks;
 }
 
 void purpinsRobot::configureQEI()

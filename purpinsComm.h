@@ -50,14 +50,8 @@ class SerialAbstract;
  * @{
  */
 
-#define PP_STR              '@'
-#define PP_SEP              ','
-#define PP_END              'e'
-
+#define PP_START_BYTE 0x40
 #define SERIAL_BUFFER_SIZE  64
-
-#define MAX_IN_ARGS  6
-#define MAX_OUT_ARGS 7
 
 /** @} */
 
@@ -70,30 +64,46 @@ enum purpinsAction
 	PP_ACTION_GET_VERSION = 1,
 	// Actuate the robot
 	PP_ACTION_DRIVE = 2,
-	PP_ACTION_DRIVE_DIRECT = 3,
+	PP_ACTION_DRIVE_MOTORS = 3,
+	PP_ACTION_DRIVE_PWM = 4,
 	// Get robot sensors
-	PP_ACTION_GET_ODOMETRY = 4,
-	PP_ACTION_GET_ENCODER_PULSES = 5,
-	PP_ACTION_GET_WHEEL_VELOCITIES = 6,
-	// Debug mode
-	PP_ACTION_GET_DEBUG = 7,
-	PP_ACTION_SET_DEBUG = 8,
+	PP_ACTION_GET_ODOMETRY = 5,
+	PP_ACTION_GET_MOTOR_SPEEDS = 6,
+	PP_ACTION_GET_ENCODER_PULSES = 7,
+	PP_ACTION_GET_IMU = 8,
+	PP_ACTION_GET_IR_SENSORS = 9,
+	PP_ACTION_GET_GAS_SENSOR = 10,
+	// Sensor streaming
+	PP_ACTION_SET_SENSORS_PACK = 20,
+	PP_ACTION_GET_SENSORS_PACK = 21,
+	PP_ACTION_SET_SENSOR_STREAMING = 22,
+	// Localisation
+	PP_ACTION_SET_GLOBAL_POSE = 23,
+	PP_ACTION_SET_NEIGHBORS_POSES = 24,
 	// Configuration
-	PP_ACTION_SET_PID_GAINS = 9,
-	PP_ACTION_GET_PID_GAINS = 10,
-	PP_ACTION_SET_ODOMETRY_CALIBRATION = 11,
-	PP_ACTION_GET_ODOMETRY_CALIBRATION = 12,
-	PP_ACTION_SET_ID = 13,
-	PP_ACTION_GET_ID = 14,
-	PP_ACTION_COUNT = 15
+	PP_ACTION_SET_PID_GAINS = 25,
+	PP_ACTION_GET_PID_GAINS = 26,
+	PP_ACTION_SET_ODOMETRY_CALIBRATION = 27,
+	PP_ACTION_GET_ODOMETRY_CALIBRATION = 28,
+	PP_ACTION_ERROR = 29,
+	PP_ACTION_COUNT = 30
 };
 
-extern int MQ_ACTION_PARAM_COUNT[];
+extern size_t PP_ACTION_DATA_SIZE[];
+
+enum purpinsError
+{
+	PP_ERROR_UNKNOWN_ACTION = 1,
+	PP_ERROR_CHECK_SUM = 2,
+	PP_ERROR_BUFFER_SIZE = 3,
+	PP_ERROR_SENSOR_NOT_AVAILABLE = 4
+};
 
 enum
 {
-	AWATING_DATA = 0,
-	GETTING_DATA = 1
+	AWATING_START_BYTE = 0,
+	AWATING_ACTION_BYTE = 1,
+	GETTING_DATA = 2
 };
 
 /**
@@ -114,70 +124,21 @@ public:
 	 */
 	purpinsComm(SerialAbstract & _serial);
 
-	int getMsg(int * argv);
+	uint8_t getMsg(uint8_t * data);
 
-	void reply(int action, int * argv, int argc);
+	void sendMsg(uint8_t action, void * ptr, size_t size);
 
-	/**
-	 * Set the robot's ID
-	 *
-	 * @param new_id id number
-	 *
-	 */
-	void setID(uint8_t new_id);
+	void parse(uint8_t action, uint8_t * data, void * ptr);
 
-	/**
-	 * Get the robot's ID
-	 *
-	 * @return id number
-	 *
-	 */
-	uint8_t getID();
-
-	/**
-	 * Set the robot's mode
-	 *
-	 * @param new_mode one of the available modes
-	 *
-	 */
-	void setMode(uint8_t new_mode);
-
-	/**
-	 * Get the robot's current mode
-	 *
-	 * @return current mode
-	 *
-	 */
-	uint8_t getMode();
-
-	void sendDebugMsg();
-	int getDebug();
-	void setDebug(int d);
-
-	/// Debug message buffer
-	char debug_msg[20];
-	/// Debug ON (1) or OFF (0)
-	uint8_t debug;
+	void error(uint8_t error_type);
 
 private:
 	/// Buffer for serial input
-	char serial_buffer[SERIAL_BUFFER_SIZE];
+	uint8_t serial_buffer[SERIAL_BUFFER_SIZE];
 	/// The current size of serial input buffer
-	int serial_buffer_size;
-	/// Status of the serial port, AWATING_DATA or GETTING_DATA
+	size_t serial_buffer_size;
+	/// Status of the serial port
 	uint8_t serial_port_status;
-
-	/// Used by the function getValue to store the index of the next separator uint8_t
-	int next_separator;
-
-	int getValue(int start_index);
-
-	/// The robot ID
-	uint8_t id;
-	/// The robot mode of operation (Serial or XBee)
-	uint8_t mode;
-
-	unsigned long start_time;
 
 	SerialAbstract & serial;
 };

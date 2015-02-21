@@ -35,6 +35,8 @@
  * Author: Gonçalo Cabrita, Bruno Antunes and Bruno Gouveia on 13/08/2012
  *********************************************************************/
 #include <cstring>
+#include <cstdio>
+#include <string.h>
 #include "purpinsComm.h"
 #include "SerialAbstract.h"
 
@@ -44,208 +46,115 @@ extern "C"
 	extern  unsigned long millis(void);
 }
 
-int PP_ACTION_PARAM_COUNT[] = {0, 2, 2, 0, 0, 0, 0, 1, 3, 0, 2, 0, 1, 0};
+size_t PP_ACTION_DATA_SIZE[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 purpinsComm::purpinsComm(SerialAbstract & _serial):serial(_serial)
 {
-	serial_port_status = AWATING_DATA;
-	debug = 0;  // By default debug is OFF
-	id=-1;
-    serial_buffer_size=SERIAL_BUFFER_SIZE;
+	serial_port_status = AWATING_START_BYTE;
+    serial_buffer_size = 0;
 }
 
-int purpinsComm::getMsg(int * argv)
+uint8_t purpinsComm::getMsg(uint8_t * data)
 {
 	// If data is available...
 	if(serial.available())
 	{
 		// Read a uint8_t from the serial port
-		uint8_t newByte = serial.read();
+		uint8_t new_byte = serial.read();
 
-		// Got a start uint8_t!!!
-		if(newByte == PP_STR)
+		// Start byte
+		if(serial_port_status == AWATING_START_BYTE && new_byte == PP_START_BYTE)
 		{
-			start_time = millis();
-
-			// If we are waiting for data start a new message
-			if(serial_port_status == AWATING_DATA)
-			{
-				serial_port_status = GETTING_DATA;
-
-				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-				serial_buffer[0] = newByte;
-				serial_buffer_size = 1;
-			}
-			// Otherwise this is an error!
-			else
-			{
-				if(debug) serial.println("[ERROR] Got start uint8_t in the middle of a message!");
-				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-				serial_port_status = AWATING_DATA;
-			}
+			memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
+			serial_buffer_size = 1;
+			serial_buffer[0] = new_byte;
+			serial_port_status = AWATING_ACTION_BYTE;
 		}
-		// Got an end uint8_t and a message is being constructed
-		else if(newByte == PP_END && serial_port_status == GETTING_DATA)
+		// Action byte
+		else if(serial_port_status == AWATING_ACTION_BYTE)
 		{
-			if(serial_buffer_size < SERIAL_BUFFER_SIZE-1)
+			if(new_byte <= 0 || new_byte >= PP_ACTION_COUNT)
 			{
-				serial_buffer[serial_buffer_size] = newByte;
-				serial_buffer_size++;
-
-				serial_buffer[serial_buffer_size] = '\0';
-				serial_buffer_size++;
-
-				if(debug)
-				{
-					usprintf(debug_msg,"[INFO] Got message: %s %d ms", serial_buffer, millis()-start_time);
-					serial.println(debug_msg);
-				}
-
-				serial_port_status = AWATING_DATA;
-
-				// Next parse incoming data...
-				int msg_id = getValue(0);
-				if(msg_id != id && msg_id != 0)
-				{
-					usprintf(debug_msg,"[INFO] The message id %d does not match this Purpins id %d", msg_id, id);
-					serial.println(debug_msg);
-					return 0;
-				}
-
-				int action = getValue(next_separator+1);
-
-				if(action == -1 && debug) serial.println("[ERROR] Could not find an action in the message!");
-
-				if(action > 0 && action < PP_ACTION_COUNT)
-				{
-					for(int i=0 ; i<PP_ACTION_PARAM_COUNT[action-1] ; i++)
-					{
-						argv[i] = getValue(next_separator+1);
-
-						if(argv[i] == -1)
-						{
-							if(debug) serial.println("[ERROR] Insufficient number of parameters for this action!");
-							return 0;
-						}
-					}
-					return action;
-				}
-				else
-				{
-					if(debug){
-						usprintf(debug_msg,"[ERROR] Unknown action: %d",action);
-						serial.println(debug_msg);
-					}
-				}
-			}
-			else
-			{
-				if(debug) serial.println("[ERROR] Buffer size exceeded!");
+				error(PP_ERROR_UNKNOWN_ACTION);
 				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-				serial_port_status = AWATING_DATA;
+				serial_port_status = AWATING_START_BYTE;
+				return 0;
 			}
+
+			serial_buffer_size = 2;
+			serial_buffer[1] = new_byte;
+			serial_port_status = GETTING_DATA;
 		}
-		// Got a uint8_t and a message is being constructed
+		// Data
 		else if(serial_port_status == GETTING_DATA)
 		{
 			if(serial_buffer_size < SERIAL_BUFFER_SIZE)
 			{
-				serial_buffer[serial_buffer_size] = newByte;
+				serial_buffer[serial_buffer_size] = new_byte;
 				serial_buffer_size++;
+
+				// Check sum
+				if(serial_buffer_size == (3 + PP_ACTION_DATA_SIZE[serial_buffer[1]-1]))
+				{
+					// Check sum
+					uint8_t check_sum = 0;
+					for(unsigned int i=0 ; i<serial_buffer_size ; i++)
+					{
+						check_sum += serial_buffer[i];
+					}
+					if(check_sum != 0)
+					{
+						error(PP_ERROR_CHECK_SUM);
+						memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
+						serial_port_status = AWATING_START_BYTE;
+						return 0;
+					}
+
+					if(PP_ACTION_DATA_SIZE[serial_buffer[1]-1] > 0) memcpy(data, serial_buffer+2, PP_ACTION_DATA_SIZE[serial_buffer[1]-1]);
+					serial_port_status = AWATING_START_BYTE;
+					return serial_buffer[1];
+				}
 			}
 			else
 			{
-				if(debug) serial.println("[ERROR] Buffer size exceeded!");
+				error(PP_ERROR_BUFFER_SIZE);
 				memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
-				serial_port_status = AWATING_DATA;
+				serial_port_status = AWATING_START_BYTE;
+				return 0;
 			}
 		}
 	}
-
 	return 0;
 }
 
-void purpinsComm::reply(int action, int * argv, int argc)
+void purpinsComm::sendMsg(uint8_t action, void * ptr, size_t size)
 {
+	uint8_t msg[size+3];
 
-	char reply_string[20];
-	usprintf(reply_string, "%c%d%c%d", PP_STR, id, PP_SEP, action);
+	msg[0] = PP_START_BYTE;
+	msg[1] = action;
 
-	unsigned int len;
+	memcpy(msg+2, (uint8_t*)ptr, size);
 
-	for(int i=0; i<argc ; i++)
+	uint8_t check_sum = 0;
+	for(unsigned int i=0 ; i<size+2 ; i++)
 	{
-		char temp[20];
-		len = ustrlen(reply_string);
-		ustrncpy(temp, reply_string, len);
-		temp[len] = 0;
-		usprintf(reply_string, "%s%c%d", temp, PP_SEP, argv[i]);
+		check_sum += msg[i];
 	}
+	// TODO: Invert bits in checksum and add 1
+	msg[size+2] = check_sum;
 
-	len = ustrlen(reply_string);
-	reply_string[len] = PP_END;
-	reply_string[len+1] = 0;
-
-	serial.println(reply_string);
+	serial.write((char*)msg, size+3);
 }
 
-// Helper function for retrieving int values from the serial input buffer
-int purpinsComm::getValue(int start_index)
+void purpinsComm::parse(uint8_t action, uint8_t * data, void * ptr)
 {
-	if(serial_buffer[start_index-1] == PP_END) return -1;
-
-	char data[16];
-	int i = 0;
-
-	while(serial_buffer[start_index+i] != PP_SEP && serial_buffer[start_index+i] != PP_END && start_index+i < SERIAL_BUFFER_SIZE && i < 16)
-	{
-		data[i] = serial_buffer[start_index+i];
-		i++;
-	}
-	data[i] = '\0';
-	next_separator = start_index+i;
-
-	if(i == 0) return -1;
-
-	return (int)ustrtoul(data, 0, 0);
+	memcpy(ptr, data, PP_ACTION_DATA_SIZE[serial_buffer[1]-1]);
 }
 
-void purpinsComm::setID(uint8_t new_id)
+void purpinsComm::error(uint8_t error_type)
 {
-	id = new_id;
-}
-
-uint8_t purpinsComm::getID()
-{
-	return id;
-}
-
-void purpinsComm::setMode(uint8_t new_mode)
-{
-	mode = new_mode;
-}
-
-uint8_t purpinsComm::getMode()
-{
-	return mode;
-}
-
-void purpinsComm::sendDebugMsg()
-{
-	if(debug) serial.println(debug_msg);
-}
-
-int purpinsComm::getDebug()
-{
-	return debug;
-}
-
-void purpinsComm::setDebug(int d)
-{
-	debug = d;
-
-	if(debug) serial.println("[INFO] Debug mode is ON!");
-	else serial.println("[INFO] Debug mode is OFF...");
+	sendMsg(PP_ACTION_ERROR, (void*)(&error_type), 1);
 }
 
 // EOF
