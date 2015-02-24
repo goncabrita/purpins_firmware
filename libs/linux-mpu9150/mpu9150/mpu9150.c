@@ -59,12 +59,12 @@ int mpu9150_init(int i2c_bus, int sample_rate, int mix_factor)
 
 
 	if (sample_rate < MIN_SAMPLE_RATE || sample_rate > MAX_SAMPLE_RATE) {
-		printf("Invalid sample rate %d\n", sample_rate);
+		//printf("Invalid sample rate %d\n", sample_rate);
 		return -1;
 	}
 
 	if (mix_factor < 0 || mix_factor > 100) {
-		printf("Invalid mag mixing factor %d\n", mix_factor);
+		//printf("Invalid mag mixing factor %d\n", mix_factor);
 		return -1;
 	}
 
@@ -72,98 +72,98 @@ int mpu9150_init(int i2c_bus, int sample_rate, int mix_factor)
 
 	linux_set_i2c_bus(i2c_bus);
 
-	printf("\nInitializing IMU .");
+	//printf("\nInitializing IMU .");
 
 
 	if (mpu_init(NULL)) {
-		printf("\nmpu_init() failed\n");
+		//printf("\nmpu_init() failed\n");
 		return -1;
 	}
 
-	printf(".");
+	//printf(".");
 
 
 #if defined AK8963_SECONDARY || defined AK8975_SECONDARY
 
 
 	if (mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS)) {
-		printf("\nmpu_set_sensors() failed\n");
+		//printf("\nmpu_set_sensors() failed\n");
 		return -1;
 	}
 #else
 	if (mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL)) {
-		printf("\nmpu_set_sensors() failed\n");
+		//printf("\nmpu_set_sensors() failed\n");
 		return -1;
 	}
 #endif
-	printf(".");
+	//printf(".");
 
 
 	if (mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL)) {
-		printf("\nmpu_configure_fifo() failed\n");
+		//printf("\nmpu_configure_fifo() failed\n");
 		return -1;
 	}
 
-	printf(".");
+	//printf(".");
 	
 
 	if (mpu_set_sample_rate(200)) {
-		printf("\nmpu_set_sample_rate() failed\n");
+		//printf("\nmpu_set_sample_rate() failed\n");
 		return -1;
 	}
 
-	printf(".");
+	//printf(".");
 
 
 #if defined AK8963_SECONDARY || defined AK8975_SECONDARY
 
 	if (mpu_set_compass_sample_rate(50)) {
-		printf("\nmpu_set_compass_sample_rate() failed\n");
+		//printf("\nmpu_set_compass_sample_rate() failed\n");
 		return -1;
 	}
 #endif
 
-	printf(".");
+	//printf(".");
 
 
 	if (dmp_load_motion_driver_firmware()) {
-		printf("\ndmp_load_motion_driver_firmware() failed\n");
+		//printf("\ndmp_load_motion_driver_firmware() failed\n");
 		return -1;
 	}
 
-	printf(".");
+	//printf(".");
 
 
 	if (dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_orientation))) {
-		printf("\ndmp_set_orientation() failed\n");
+		//printf("\ndmp_set_orientation() failed\n");
 		return -1;
 	}
 
-	printf(".");
+	//printf(".");
 
 
   	if (dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL 
 						| DMP_FEATURE_SEND_CAL_GYRO | DMP_FEATURE_GYRO_CAL)) {
-		printf("\ndmp_enable_feature() failed\n");
+		//printf("\ndmp_enable_feature() failed\n");
 		return -1;
 	}
 
-	printf(".");
+	//printf(".");
 
  
 	if (dmp_set_fifo_rate(sample_rate)) {
-		printf("\ndmp_set_fifo_rate() failed\n");
+		//printf("\ndmp_set_fifo_rate() failed\n");
 		return -1;
 	}
-	printf(".");
+	//printf(".");
 
 
 	if (mpu_set_dmp_state(1)) {
-		printf("\nmpu_set_dmp_state(1) failed\n");
+		//printf("\nmpu_set_dmp_state(1) failed\n");
 		return -1;
 	}
 
-	printf(" done\n\n");
+	//printf(" done\n\n");
 
 	return 0;
 }
@@ -172,7 +172,9 @@ void mpu9150_exit()
 {
 	// turn off the DMP on exit 
 	if (mpu_set_dmp_state(0))
-		printf("mpu_set_dmp_state(0) failed\n");
+	{
+		//printf("mpu_set_dmp_state(0) failed\n");
+	}
 
 	// TODO: Should turn off the sensors too
 }
@@ -199,10 +201,12 @@ void mpu9150_set_accel_cal(caldata_t *cal)
 	}
 
 	if (debug_on) {
-		printf("\naccel cal (range : offset)\n");
+		//printf("\naccel cal (range : offset)\n");
 
 		for (i = 0; i < 3; i++)
-			printf("%d : %d\n", accel_cal_data.range[i], accel_cal_data.offset[i]);
+		{
+			//printf("%d : %d\n", accel_cal_data.range[i], accel_cal_data.offset[i]);
+		}
 	}
 
 	mpu_set_accel_bias(bias);
@@ -234,10 +238,12 @@ void mpu9150_set_mag_cal(caldata_t *cal)
 	}
 
 	if (debug_on) {
-		printf("\nmag cal (range : offset)\n");
+		//printf("\nmag cal (range : offset)\n");
 
 		for (i = 0; i < 3; i++)
-			printf("%d : %d\n", mag_cal_data.range[i], mag_cal_data.offset[i]);
+		{
+			//printf("%d : %d\n", mag_cal_data.range[i], mag_cal_data.offset[i]);
+		}
 	}
 
 	use_mag_cal = 1;
@@ -252,14 +258,14 @@ int mpu9150_read_dmp(mpudata_t *mpu)
 		return -1;
 
 	if (dmp_read_fifo(mpu->rawGyro, mpu->rawAccel, mpu->rawQuat, &mpu->dmpTimestamp, &sensors, &more) < 0) {
-		printf("dmp_read_fifo() failed\n");
+		//printf("dmp_read_fifo() failed\n");
 		return -1;
 	}
 
 	while (more) {
 		// Fell behind, reading again
 		if (dmp_read_fifo(mpu->rawGyro, mpu->rawAccel, mpu->rawQuat, &mpu->dmpTimestamp, &sensors, &more) < 0) {
-			printf("dmp_read_fifo() failed\n");
+			//printf("dmp_read_fifo() failed\n");
 			return -1;
 		}
 	}
@@ -270,7 +276,7 @@ int mpu9150_read_dmp(mpudata_t *mpu)
 int mpu9150_read_mag(mpudata_t *mpu)
 {
 	if (mpu_get_compass_reg(mpu->rawMag, &mpu->magTimestamp) < 0) {
-		printf("mpu_get_compass_reg() failed\n");
+		//printf("mpu_get_compass_reg() failed\n");
 		return -1;
 	}
 
@@ -297,7 +303,7 @@ int data_ready()
 	short status;
 
 	if (mpu_get_int_status(&status) < 0) {
-		printf("mpu_get_int_status() failed\n");
+		//printf("mpu_get_int_status() failed\n");
 		return 0;
 	}
 
@@ -391,7 +397,7 @@ int data_fusion(mpudata_t *mpu)
 	newMagYaw = -atan2f(magQuat[QUAT_Y], magQuat[QUAT_X]);
 
 	if (newMagYaw != newMagYaw) {
-		printf("newMagYaw NAN\n");
+		//printf("newMagYaw NAN\n");
 		return -1;
 	}
 

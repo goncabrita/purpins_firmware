@@ -37,13 +37,13 @@
 
 #include "pid.h"
 
-void reset(pid_t * pid)
+void reset(pid_ * pid)
 {
 	pid->last_error = 0.0;
 	pid->accumulated_error = 0.0;
 }
 
-int32_t run(pid_t * pid, float reference, float sensor)
+int32_t run(pid_ * pid, float reference, float sensor)
 {
 	double kp, ki_dt, kd_dt;
 

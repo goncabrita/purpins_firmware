@@ -37,6 +37,8 @@
 #include <cstring>
 #include <cstdio>
 #include <string.h>
+#include <driverlib/rom.h>
+#include <driverlib/rom_map.h>
 #include "purpinsComm.h"
 #include "SerialAbstract.h"
 
@@ -46,15 +48,13 @@ extern "C"
 	extern  unsigned long millis(void);
 }
 
-size_t PP_ACTION_DATA_SIZE[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
 purpinsComm::purpinsComm(SerialAbstract & _serial):serial(_serial)
 {
 	serial_port_status = AWATING_START_BYTE;
     serial_buffer_size = 0;
 }
 
-uint8_t purpinsComm::getMsg(uint8_t * data)
+uint8_t purpinsComm::getMsg(uint8_t * data, size_t & data_size)
 {
 	// If data is available...
 	if(serial.available())
@@ -65,9 +65,11 @@ uint8_t purpinsComm::getMsg(uint8_t * data)
 		// Start byte
 		if(serial_port_status == AWATING_START_BYTE && new_byte == PP_START_BYTE)
 		{
+			memset(data, 0, SERIAL_BUFFER_SIZE);
 			memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
 			serial_buffer_size = 1;
 			serial_buffer[0] = new_byte;
+			crc_ = ROM_Crc8CCITT(0, &new_byte, 1);
 			serial_port_status = AWATING_ACTION_BYTE;
 		}
 		// Action byte
@@ -83,6 +85,15 @@ uint8_t purpinsComm::getMsg(uint8_t * data)
 
 			serial_buffer_size = 2;
 			serial_buffer[1] = new_byte;
+			crc_ = ROM_Crc8CCITT(crc_, &new_byte, 1);
+			serial_port_status = AWATING_SIZE_BYTE;
+		}
+		// Size byte
+		else if(serial_port_status == AWATING_SIZE_BYTE)
+		{
+			serial_buffer_size = 3;
+			serial_buffer[2] = new_byte;
+			crc_ = ROM_Crc8CCITT(crc_, &new_byte, 1);
 			serial_port_status = GETTING_DATA;
 		}
 		// Data
@@ -94,15 +105,9 @@ uint8_t purpinsComm::getMsg(uint8_t * data)
 				serial_buffer_size++;
 
 				// Check sum
-				if(serial_buffer_size == (3 + PP_ACTION_DATA_SIZE[serial_buffer[1]-1]))
+				if(serial_buffer_size == (4 + serial_buffer[2]))
 				{
-					// Check sum
-					uint8_t check_sum = 0;
-					for(unsigned int i=0 ; i<serial_buffer_size ; i++)
-					{
-						check_sum += serial_buffer[i];
-					}
-					if(check_sum != 0)
+					if(crc_ != new_byte)
 					{
 						error(PP_ERROR_CHECK_SUM);
 						memset(serial_buffer, 0, SERIAL_BUFFER_SIZE);
@@ -110,10 +115,13 @@ uint8_t purpinsComm::getMsg(uint8_t * data)
 						return 0;
 					}
 
-					if(PP_ACTION_DATA_SIZE[serial_buffer[1]-1] > 0) memcpy(data, serial_buffer+2, PP_ACTION_DATA_SIZE[serial_buffer[1]-1]);
+					data_size = serial_buffer[2];
+					if(serial_buffer[2] > 0) memcpy(data, serial_buffer+3, serial_buffer[2]);
 					serial_port_status = AWATING_START_BYTE;
 					return serial_buffer[1];
 				}
+
+				crc_ = ROM_Crc8CCITT(crc_, &new_byte, 1);
 			}
 			else
 			{
@@ -129,27 +137,23 @@ uint8_t purpinsComm::getMsg(uint8_t * data)
 
 void purpinsComm::sendMsg(uint8_t action, void * ptr, size_t size)
 {
-	uint8_t msg[size+3];
+	uint8_t msg[size+4];
 
 	msg[0] = PP_START_BYTE;
 	msg[1] = action;
+	msg[2] = size;
 
-	memcpy(msg+2, (uint8_t*)ptr, size);
+	memcpy(msg+3, (uint8_t*)ptr, size);
 
-	uint8_t check_sum = 0;
-	for(unsigned int i=0 ; i<size+2 ; i++)
-	{
-		check_sum += msg[i];
-	}
-	// TODO: Invert bits in checksum and add 1
-	msg[size+2] = check_sum;
+	uint8_t crc = ROM_Crc8CCITT(0, msg, size+3);
+	msg[size+3] = crc;
 
-	serial.write((char*)msg, size+3);
+	serial.write((char*)msg, size+4);
 }
 
-void purpinsComm::parse(uint8_t action, uint8_t * data, void * ptr)
+void purpinsComm::sendAck(uint8_t action)
 {
-	memcpy(ptr, data, PP_ACTION_DATA_SIZE[serial_buffer[1]-1]);
+	sendMsg(action, 0, 0);
 }
 
 void purpinsComm::error(uint8_t error_type)

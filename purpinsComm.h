@@ -51,7 +51,7 @@ class SerialAbstract;
  */
 
 #define PP_START_BYTE 0x40
-#define SERIAL_BUFFER_SIZE  64
+#define SERIAL_BUFFER_SIZE  259
 
 /** @} */
 
@@ -89,8 +89,6 @@ enum purpinsAction
 	PP_ACTION_COUNT = 30
 };
 
-extern size_t PP_ACTION_DATA_SIZE[];
-
 enum purpinsError
 {
 	PP_ERROR_UNKNOWN_ACTION = 1,
@@ -103,7 +101,8 @@ enum
 {
 	AWATING_START_BYTE = 0,
 	AWATING_ACTION_BYTE = 1,
-	GETTING_DATA = 2
+	AWATING_SIZE_BYTE = 2,
+	GETTING_DATA = 3
 };
 
 /**
@@ -124,11 +123,11 @@ public:
 	 */
 	purpinsComm(SerialAbstract & _serial);
 
-	uint8_t getMsg(uint8_t * data);
+	uint8_t getMsg(uint8_t * data, size_t & data_size);
 
 	void sendMsg(uint8_t action, void * ptr, size_t size);
 
-	void parse(uint8_t action, uint8_t * data, void * ptr);
+	void sendAck(uint8_t action);
 
 	void error(uint8_t error_type);
 
@@ -139,6 +138,8 @@ private:
 	size_t serial_buffer_size;
 	/// Status of the serial port
 	uint8_t serial_port_status;
+	/// Cyclic Redundancy Check
+	uint8_t crc_;
 
 	SerialAbstract & serial;
 };

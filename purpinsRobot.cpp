@@ -153,7 +153,9 @@ void purpinsRobot::calculateOdometry()
 
 void purpinsRobot::getOdometry(Pose * odometry)
 {
-	odometry = &odometry_;
+	odometry->x = odometry_.x;
+	odometry->y = odometry_.y;
+	odometry->yaw = odometry_.yaw;
 }
 
 void purpinsRobot::resetOdometry()
@@ -161,6 +163,13 @@ void purpinsRobot::resetOdometry()
 	odometry_.x = 0.0;
 	odometry_.y = 0.0;
 	odometry_.yaw = 0.0;
+}
+
+void purpinsRobot::setGlobalPose(Pose * pose)
+{
+	global_pose_.x = pose->x;
+	global_pose_.y = pose->y;
+	global_pose_.yaw = pose->yaw;
 }
 
 void purpinsRobot::getEncoderTicks(EncoderPulses * encoder_pulses)

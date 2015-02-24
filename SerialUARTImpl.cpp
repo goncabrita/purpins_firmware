@@ -49,7 +49,7 @@ SerialUARTImpl::~SerialUARTImpl(){
 }
 
 unsigned int SerialUARTImpl::available(){
-	//return UARTRxBytesAvail();
+	return UARTRxBytesAvail();
 }
 
 char SerialUARTImpl::read(){

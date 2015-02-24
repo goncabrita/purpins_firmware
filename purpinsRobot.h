@@ -68,7 +68,7 @@ typedef struct _motor
 	int32_t ticks; // Ticks counted by the QEI
 	int32_t last_ticks; // Last ticks counted by the QEI
 
-	pid_t pid; // Motor speed PID
+	pid_ pid; // Motor speed PID
 
 } PurpinsMotor;
 
@@ -163,6 +163,13 @@ public:
 	 * Reset the odometry of the robot
 	 */
 	void resetOdometry();
+
+	/**
+	 * Set the global pose of the robot
+	 *
+	 * @param pose Robot global pose
+	 */
+	void setGlobalPose(Pose * pose);
 
 	/**
      * Get the QEI ticks for the two motors

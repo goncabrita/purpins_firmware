@@ -54,10 +54,10 @@ typedef struct _pid
 	float last_error;
 	float accumulated_error;
 
-} pid_t;
+} pid_;
 
-int32_t run(pid_t * pid, float reference, float sensor);
-void reset(pid_t * pid);
+int32_t run(pid_ * pid, float reference, float sensor);
+void reset(pid_ * pid);
 
 #endif
 
