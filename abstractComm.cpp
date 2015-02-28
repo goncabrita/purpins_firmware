@@ -1,4 +1,4 @@
-#include "SerialAbstract.h"
+#include "abstractComm.h"
 
 SerialAbstract::~SerialAbstract() {
 }

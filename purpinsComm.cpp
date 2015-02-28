@@ -40,7 +40,7 @@
 #include <driverlib/rom.h>
 #include <driverlib/rom_map.h>
 #include "purpinsComm.h"
-#include "SerialAbstract.h"
+#include "abstractComm.h"
 
 extern "C"
 {

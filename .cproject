@@ -60,12 +60,21 @@
 									<listOptionValue builtIn="false" value="UART_BUFFERED"/>
 									<listOptionValue builtIn="false" value="MPU6050"/>
 									<listOptionValue builtIn="false" value="EMPL_TARGET_TIVAC"/>
+									<listOptionValue builtIn="false" value="CC3000_TM4C123_SPI"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.989115484" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1768218896" name="Cross ARM C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.1592585088" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src/spi&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src/uart&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src/host_driver&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src/host_driver/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src/host_driver/core_driver&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/purpins_firmware}&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.std.751157493" name="Language standard" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.std" useByScannerDiscovery="true" value="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.std.gnu99" valueType="enumerated"/>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1486958051" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="false" valueType="definedSymbols">
@@ -81,6 +90,14 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.618195139" name="Cross ARM C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1525352783" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src/spi&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src/uart&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src/host_driver&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src/host_driver/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${TIVAWARE}/cc3000/src/host_driver/core_driver&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/purpins_firmware}&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.804355691" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="TARGET_IS_BLIZZARD_RB1"/>
@@ -115,7 +132,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/tiva.ld}&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.nostart.1917263527" name="Do not use standard start files (-nostartfiles)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.nostart" value="true" valueType="boolean"/>
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.otherobjs.1061613636" name="Other objects" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.otherobjs" valueType="userObjs"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.otherobjs.1061613636" name="Other objects" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.otherobjs"/>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.other.464551626" name="Other linker flags" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.other" value="" valueType="string"/>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.input.388118599" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>

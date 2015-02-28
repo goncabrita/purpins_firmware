@@ -8,7 +8,7 @@
 #ifndef SERIALUARTIMPL_H_
 #define SERIALUARTIMPL_H_
 
-#include "SerialAbstract.h"
+#include "abstractComm.h"
 
 
 /**
