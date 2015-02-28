@@ -118,16 +118,6 @@ void CC3000AsyncCallback(long lEventType, unsigned char *pcData, unsigned char u
 		g_ui32CC3000DHCP_configured = 0;
 
 		// TODO: Recover from this state
-
-		//
-		// Turn off the LED3 (Green)
-		//
-		turnLedOff(BLUE_LED);
-
-		//
-		// Turn back on the LED 1 (RED)
-		//
-		turnLedOn(RED_LED);
 	}
 
 	//
@@ -154,16 +144,6 @@ void CC3000AsyncCallback(long lEventType, unsigned char *pcData, unsigned char u
 			// DHCP success, set global accordingly.
 			//
 			g_ui32CC3000DHCP = 1;
-
-			//
-			// Turn off the LED1 (RED)
-			//
-			turnLedOff(RED_LED);
-
-			//
-			// Turn on the LED3 (Green).
-			//
-			turnLedOn(BLUE_LED);
 		}
 		else
 		{
@@ -382,12 +362,6 @@ uint8_t CC3000Reset()
     // Wait a bit.
     //
     ROM_SysCtlDelay(100000);
-
-    //
-    // Turn off Green LED, set to Red
-    //
-    turnLedOff(BLUE_LED);
-    turnLedOn(RED_LED);
 
     //
     // Restart the CC3000.

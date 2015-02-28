@@ -56,11 +56,12 @@
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.1671488464" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="TARGET_IS_BLIZZARD_RB1"/>
+									<listOptionValue builtIn="false" value="CC3000_TM4C123_SPI"/>
 									<listOptionValue builtIn="false" value="PART_TM4C123GH6PM"/>
 									<listOptionValue builtIn="false" value="UART_BUFFERED"/>
+									<listOptionValue builtIn="false" value="_POSIX_SOURCE"/>
 									<listOptionValue builtIn="false" value="MPU6050"/>
 									<listOptionValue builtIn="false" value="EMPL_TARGET_TIVAC"/>
-									<listOptionValue builtIn="false" value="CC3000_TM4C123_SPI"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.989115484" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -81,7 +82,9 @@
 									<listOptionValue builtIn="false" value="TARGET_IS_BLIZZARD_RB1"/>
 									<listOptionValue builtIn="false" value="TM4C123GH6PM"/>
 									<listOptionValue builtIn="false" value="PART_TM4C123GH6PM"/>
+									<listOptionValue builtIn="false" value="CC3000_TM4C123_SPI"/>
 									<listOptionValue builtIn="false" value="UART_BUFFERED"/>
+									<listOptionValue builtIn="false" value="_POSIX_SOURCE"/>
 									<listOptionValue builtIn="false" value="MPU6050"/>
 									<listOptionValue builtIn="false" value="EMPL_TARGET_TIVAC"/>
 								</option>
@@ -103,7 +106,9 @@
 									<listOptionValue builtIn="false" value="TARGET_IS_BLIZZARD_RB1"/>
 									<listOptionValue builtIn="false" value="TM4C123GH6PM"/>
 									<listOptionValue builtIn="false" value="PART_TM4C123GH6PM"/>
+									<listOptionValue builtIn="false" value="CC3000_TM4C123_SPI"/>
 									<listOptionValue builtIn="false" value="UART_BUFFERED"/>
+									<listOptionValue builtIn="false" value="_POSIX_SOURCE"/>
 									<listOptionValue builtIn="false" value="MPU6050"/>
 									<listOptionValue builtIn="false" value="EMPL_TARGET_TIVAC"/>
 								</option>
@@ -156,7 +161,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="mpu6050-test-main.cpp|libs/linux-mpu9150/imucal.c|libs/linux-mpu9150/imu.c|libs/linux-mpu9150/glue/linux_glue.c|main-test.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="cc3000/drivers|mpu6050-test-main.cpp|libs/linux-mpu9150/imucal.c|libs/linux-mpu9150/imu.c|libs/linux-mpu9150/glue/linux_glue.c|main-test.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -294,7 +299,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="mpu6050-test-main.cpp|libs/linux-mpu9150/imucal.c|libs/linux-mpu9150/imu.c|libs/linux-mpu9150/glue/linux_glue.c|main-test.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="cc3000/drivers|mpu6050-test-main.cpp|libs/linux-mpu9150/imucal.c|libs/linux-mpu9150/imu.c|libs/linux-mpu9150/glue/linux_glue.c|main-test.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

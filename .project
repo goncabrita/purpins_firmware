@@ -131,11 +131,6 @@
 			<locationURI>TIVAWARE_ROOT/cc3000/src/spi/spi-tm4c123.c</locationURI>
 		</link>
 		<link>
-			<name>cc3000/src/spi/spi-tm4c129.c</name>
-			<type>1</type>
-			<locationURI>TIVAWARE_ROOT/cc3000/src/spi/spi-tm4c129.c</locationURI>
-		</link>
-		<link>
 			<name>cc3000/src/spi/spi.h</name>
 			<type>1</type>
 			<locationURI>TIVAWARE_ROOT/cc3000/src/spi/spi.h</locationURI>

@@ -138,29 +138,15 @@
 #define CC3000_LED_GREEN_PORT           GPIO_PORTF_BASE
 #define CC3000_LED_GREEN_PIN            GPIO_PIN_3
 
-typedef enum
-{
-    RED_LED,
-    GREEN_LED,
-    BLUE_LED
-}
-tBoardLED;
-
 //*****************************************************************************
 //
 // Function Prototypes
 //
 //*****************************************************************************
 extern void pio_init(void);
-extern void initLEDs(void);
 extern long ReadWlanInterruptPin(void);
 extern void WlanInterruptEnable(void);
 extern void WlanInterruptDisable(void);
 extern void WriteWlanPin( unsigned char val );
-extern void InitSysTick(void);
-extern void SysTickHandler(void);
-extern void initClk(void);
-extern void turnLedOn(tBoardLED eLED);
-extern void turnLedOff(tBoardLED eLED);
 
 #endif //__BOARD_H__
