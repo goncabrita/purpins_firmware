@@ -358,7 +358,7 @@ int main()
 				{
 					if(data[i] < PP_ACTION_GET_ODOMETRY || data[i] > PP_ACTION_GET_GAS_SENSOR)
 					{
-						communication.error(PP_ERROR_SENSOR_NOT_AVAILABLE);
+						communication.error(PP_ERROR_SENSOR_UNKNOWN);
 						ok = false;
 						break;
 					}
@@ -389,39 +389,51 @@ int main()
 			}
 			else if(action == PP_ACTION_SET_NEIGHBORS_POSES)
 			{
-				communication.sendAck(PP_ACTION_SET_NEIGHBORS_POSES);
+				// TODO: Finish this
 			}
 			else if(action == PP_ACTION_SET_ID)
 			{
-				// TODO: Finish this
+				memcpy(&id, data, sizeof(id));
+				settings.save(PP_SETTING_ID, data, sizeof(uint32_t));
+				communication.sendAck(PP_ACTION_SET_ID);
 			}
 			else if(action == PP_ACTION_GET_ID)
 			{
-				// TODO: Finish this
+				communication.sendMsg(PP_ACTION_GET_ID, (void*)(&id), sizeof(id));
 			}
 			else if(action == PP_ACTION_SET_PID_GAINS)
 			{
-				// TODO: Finish this
+				memcpy(purpins.leftPIDGains(), data, sizeof(PIDGains));
+				memcpy(purpins.rightPIDGains(), data+sizeof(PIDGains), sizeof(PIDGains));
+				settings.save(PP_SETTING_LEFT_PID, data, sizeof(PIDGains));
+				settings.save(PP_SETTING_RIGHT_PID, data+sizeof(PIDGains), sizeof(PIDGains));
+				communication.sendAck(PP_ACTION_SET_PID_GAINS);
 			}
 			else if(action == PP_ACTION_GET_PID_GAINS)
 			{
-				// TODO: Finish this
+				memcpy(data, purpins.leftPIDGains(), sizeof(PIDGains));
+				memcpy(data+sizeof(PIDGains), purpins.rightPIDGains(), sizeof(PIDGains));
+				communication.sendMsg(PP_ACTION_GET_ID, (void*)(data), 2*sizeof(PIDGains));
 			}
 			else if(action == PP_ACTION_SET_SERVER_DATA)
 			{
-				// TODO: Finish this
+				settings.save(PP_SETTING_SERVER_DATA, data, sizeof(Server));
+				communication.sendAck(PP_ACTION_SET_SERVER_DATA);
 			}
 			else if(action == PP_ACTION_GET_SERVER_DATA)
 			{
-				// TODO: Finish this
+				settings.get(PP_SETTING_SERVER_DATA, data, sizeof(Server));
+				communication.sendMsg(PP_ACTION_GET_SERVER_DATA, (void*)(data), sizeof(Server));
 			}
 			else if(action == PP_ACTION_SET_NETWORK_DATA)
 			{
-				// TODO: Finish this
+				settings.save(PP_SETTING_NETWORK_DATA, data, sizeof(Network));
+				communication.sendAck(PP_ACTION_SET_NETWORK_DATA);
 			}
 			else if(action == PP_ACTION_GET_NETWORK_DATA)
 			{
-				// TODO: Finish this
+				settings.get(PP_SETTING_NETWORK_DATA, data, sizeof(Network));
+				communication.sendMsg(PP_ACTION_GET_NETWORK_DATA, (void*)(data), sizeof(Network));
 			}
 			else if(action == PP_ACTION_SET_COMM_TYPE)
 			{
@@ -451,6 +463,11 @@ int main()
 					{
 						// TODO
 					}
+					else
+					{
+						communication.error(PP_ERROR_COMM_UNKNOWN);
+					}
+					communication.sendAck(PP_ACTION_SET_COMM_TYPE);
 				}
 			}
 
