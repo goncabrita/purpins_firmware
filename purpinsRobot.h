@@ -2,7 +2,7 @@
 *
 * Software License Agreement (BSD License)
 *
-*  Copyright (c) 2012, ISR University of Coimbra.
+*  Copyright (c) 2015, ISR University of Coimbra.
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,7 @@ typedef struct _motor
 	int32_t ticks; // Ticks counted by the QEI
 	int32_t last_ticks; // Last ticks counted by the QEI
 
-	pid_ pid; // Motor speed PID
+	PID pid; // Motor speed PID
 
 } PurpinsMotor;
 
@@ -189,6 +189,9 @@ public:
 	 * @return Right encoder ticks
 	 */
 	int32_t getRightTicks() {return right_motor_.ticks;};
+
+	PIDGains * leftPIDGains() {return &left_motor_.pid.gains;};
+	PIDGains * rightPIDGains() {return &right_motor_.pid.gains;};
 
 private:
 	PurpinsMotor left_motor_;

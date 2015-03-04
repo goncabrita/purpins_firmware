@@ -26,6 +26,17 @@
 
 //*****************************************************************************
 //
+// If building with a C++ compiler, make all of the definitions in this header
+// have a C binding.
+//
+//*****************************************************************************
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+//*****************************************************************************
+//
 // The desired system tick frequency.Defines for setting up the system tick.
 //
 //*****************************************************************************
@@ -75,11 +86,11 @@
 #define INT_SPI                         INT_SSI3
 
 //
-// SW EN settings
+// SW EN settings PE3
 //
-#define SYSCTL_PERIPH_SW_EN_PORT        SYSCTL_PERIPH_GPIOB
-#define SPI_GPIO_SW_EN_BASE             GPIO_PORTB_BASE
-#define SPI_EN_PIN                      GPIO_PIN_5
+#define SYSCTL_PERIPH_SW_EN_PORT        SYSCTL_PERIPH_GPIOE
+#define SPI_GPIO_SW_EN_BASE             GPIO_PORTE_BASE
+#define SPI_EN_PIN                      GPIO_PIN_3
 
 //
 // CS settings PD1
@@ -104,8 +115,8 @@
 #define SPI_RX_MUX_SEL                  GPIO_PD2_SSI3RX
 #define SPI_TX_MUX_SEL                  GPIO_PD3_SSI3TX
 
-#define SPI_UDMA_RX_CHANNEL             UDMA_CH12_SSI2RX
-#define SPI_UDMA_TX_CHANNEL             UDMA_CH13_SSI2TX
+#define SPI_UDMA_RX_CHANNEL             UDMA_CH14_SSI3RX
+#define SPI_UDMA_TX_CHANNEL             UDMA_CH15_SSI3TX
 
 //*****************************************************************************
 //
@@ -148,5 +159,14 @@ extern long ReadWlanInterruptPin(void);
 extern void WlanInterruptEnable(void);
 extern void WlanInterruptDisable(void);
 extern void WriteWlanPin( unsigned char val );
+
+//*****************************************************************************
+//
+// Mark the end of the C bindings section for C++ compilers.
+//
+//*****************************************************************************
+#ifdef __cplusplus
+}
+#endif
 
 #endif //__BOARD_H__

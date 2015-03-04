@@ -2,7 +2,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, ISR University of Coimbra.
+ *  Copyright (c) 2015, ISR University of Coimbra.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *
- * Author: Goncalo Cabrita, Bruno Antunes and Bruno Gouveia on 13/08/2012
+ * Author: Goncalo Cabrita and Bruno Gouveia on 13/08/2012
  *********************************************************************/
 
 #ifndef __PURPINSCOMM
@@ -40,7 +40,7 @@
 
 #include <stdint.h>
 
-class SerialAbstract;
+class AbstractComm;
 
 /** @file */
 
@@ -52,6 +52,8 @@ class SerialAbstract;
 
 #define PP_START_BYTE 0x40
 #define SERIAL_BUFFER_SIZE  259
+
+#define SENSORS_PACK_SIZE 10
 
 /** @} */
 
@@ -81,12 +83,17 @@ enum purpinsAction
 	PP_ACTION_SET_GLOBAL_POSE = 23,
 	PP_ACTION_SET_NEIGHBORS_POSES = 24,
 	// Configuration
-	PP_ACTION_SET_PID_GAINS = 25,
-	PP_ACTION_GET_PID_GAINS = 26,
-	PP_ACTION_SET_ODOMETRY_CALIBRATION = 27,
-	PP_ACTION_GET_ODOMETRY_CALIBRATION = 28,
-	PP_ACTION_ERROR = 29,
-	PP_ACTION_COUNT = 30
+	PP_ACTION_SET_ID = 25,
+	PP_ACTION_GET_ID = 26,
+	PP_ACTION_SET_PID_GAINS = 27,
+	PP_ACTION_GET_PID_GAINS = 28,
+	PP_ACTION_SET_SERVER_DATA = 29,
+	PP_ACTION_GET_SERVER_DATA = 30,
+	PP_ACTION_SET_NETWORK_DATA = 31,
+	PP_ACTION_GET_NETWORK_DATA = 32,
+	PP_ACTION_SET_COMM_TYPE = 33,
+	PP_ACTION_ERROR = 34,
+	PP_ACTION_COUNT = 35
 };
 
 enum purpinsError
@@ -121,7 +128,8 @@ public:
 	 * @param _serial Object with one of the SerialAbastact implementations
 	 *
 	 */
-	purpinsComm(SerialAbstract & _serial);
+	purpinsComm(AbstractComm * _serial);
+	void setCommLayer(AbstractComm * _serial);
 
 	uint8_t getMsg(uint8_t * data, size_t & data_size);
 
@@ -130,6 +138,8 @@ public:
 	void sendAck(uint8_t action);
 
 	void error(uint8_t error_type);
+
+	uint32_t type();
 
 private:
 	/// Buffer for serial input
@@ -141,9 +151,10 @@ private:
 	/// Cyclic Redundancy Check
 	uint8_t crc_;
 
-	SerialAbstract & serial;
+	AbstractComm * serial;
 };
 
 #endif //__PURPINSCOMM
+
 // EOF
 

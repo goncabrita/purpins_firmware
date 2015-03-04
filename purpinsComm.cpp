@@ -2,7 +2,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, ISR University of Coimbra.
+ *  Copyright (c) 2015, ISR University of Coimbra.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,9 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *
- * Author: Gon√ßalo Cabrita, Bruno Antunes and Bruno Gouveia on 13/08/2012
+ * Author: Gonçalo Cabrita and Bruno Gouveia on 13/08/2012
  *********************************************************************/
+
 #include <cstring>
 #include <cstdio>
 #include <string.h>
@@ -48,19 +49,31 @@ extern "C"
 	extern  unsigned long millis(void);
 }
 
-purpinsComm::purpinsComm(SerialAbstract & _serial):serial(_serial)
+#define MAX_BUFFER_SIZE 512
+
+purpinsComm::purpinsComm(AbstractComm * _serial)
 {
+	serial = _serial;
+
 	serial_port_status = AWATING_START_BYTE;
     serial_buffer_size = 0;
 }
 
+void purpinsComm::setCommLayer(AbstractComm * _serial)
+{
+	serial = _serial;
+}
+
 uint8_t purpinsComm::getMsg(uint8_t * data, size_t & data_size)
 {
+	uint8_t buffer[MAX_BUFFER_SIZE];
+	uint32_t bytes = serial->read((char*)buffer, MAX_BUFFER_SIZE);
+
 	// If data is available...
-	if(serial.available())
+	for(int i=0 ; i<bytes ; i++)
 	{
 		// Read a uint8_t from the serial port
-		uint8_t new_byte = serial.read();
+		uint8_t new_byte = buffer[i];
 
 		// Start byte
 		if(serial_port_status == AWATING_START_BYTE && new_byte == PP_START_BYTE)
@@ -148,7 +161,7 @@ void purpinsComm::sendMsg(uint8_t action, void * ptr, size_t size)
 	uint8_t crc = ROM_Crc8CCITT(0, msg, size+3);
 	msg[size+3] = crc;
 
-	serial.write((char*)msg, size+4);
+	serial->write((char*)msg, size+4);
 }
 
 void purpinsComm::sendAck(uint8_t action)
@@ -159,6 +172,11 @@ void purpinsComm::sendAck(uint8_t action)
 void purpinsComm::error(uint8_t error_type)
 {
 	sendMsg(PP_ACTION_ERROR, (void*)(&error_type), 1);
+}
+
+uint32_t purpinsComm::type()
+{
+	return serial->type();
 }
 
 // EOF

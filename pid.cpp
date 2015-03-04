@@ -2,7 +2,7 @@
 *
 * Software License Agreement (BSD License)
 *
-*  Copyright (c) 2012, ISR University of Coimbra.
+*  Copyright (c) 2015, ISR University of Coimbra.
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -37,19 +37,19 @@
 
 #include "pid.h"
 
-void reset(pid_ * pid)
+void reset(PID * pid)
 {
 	pid->last_error = 0.0;
 	pid->accumulated_error = 0.0;
 }
 
-int32_t run(pid_ * pid, float reference, float sensor)
+int32_t run(PID * pid, float reference, float sensor)
 {
 	double kp, ki_dt, kd_dt;
 
-	kp = pid->kp;
-	ki_dt = pid->ki * pid->sample_time;
-	kd_dt = pid->kd / pid->sample_time;
+	kp = pid->gains.kp;
+	ki_dt = pid->gains.ki * pid->sample_time;
+	kd_dt = pid->gains.kd / pid->sample_time;
 
 	// Calculate error
 	float error = reference - sensor;

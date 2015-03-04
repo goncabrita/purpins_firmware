@@ -2,7 +2,7 @@
 *
 * Software License Agreement (BSD License)
 *
-*  Copyright (c) 2012, ISR University of Coimbra.
+*  Copyright (c) 2015, ISR University of Coimbra.
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@
 *********************************************************************/
 
 #include <stdint.h>
+#include "purpinsDataTypes.h"
 
 #ifndef PID_H
 #define PID_H
@@ -45,19 +46,17 @@
 
 typedef struct _pid
 {
-	float kp;
-	float ki;
-	float kd;
+	PIDGains gains;
 
 	float sample_time;
 
 	float last_error;
 	float accumulated_error;
 
-} pid_;
+} PID;
 
-int32_t run(pid_ * pid, float reference, float sensor);
-void reset(pid_ * pid);
+int32_t run(PID * pid, float reference, float sensor);
+void reset(PID * pid);
 
 #endif
 

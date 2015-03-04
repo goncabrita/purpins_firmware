@@ -2,7 +2,7 @@
 *
 * Software License Agreement (BSD License)
 *
-*  Copyright (c) 2012, ISR University of Coimbra.
+*  Copyright (c) 2015, ISR University of Coimbra.
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <cstring>
 #include <math.h>
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
@@ -70,9 +71,9 @@ purpinsRobot::purpinsRobot()
 	left_motor_.target_speed = 0.0;
 	left_motor_.ticks = 0;
 	left_motor_.last_ticks = 0;
-	left_motor_.pid.kp = 100.0;
-	left_motor_.pid.ki = 10.0;
-	left_motor_.pid.kd = 0.1;
+	left_motor_.pid.gains.kp = 100.0;
+	left_motor_.pid.gains.ki = 10.0;
+	left_motor_.pid.gains.kd = 0.1;
 	left_motor_.pid.sample_time = QEI_RATE;
 
 	right_motor_.closed_loop = false;
@@ -80,9 +81,9 @@ purpinsRobot::purpinsRobot()
 	right_motor_.target_speed = 0.0;
 	right_motor_.ticks = 0;
 	right_motor_.last_ticks = 0;
-	right_motor_.pid.kp = 100.0;
-	right_motor_.pid.ki = 10.0;
-	right_motor_.pid.kd = 0.1;
+	right_motor_.pid.gains.kp = 100.0;
+	right_motor_.pid.gains.ki = 10.0;
+	right_motor_.pid.gains.kd = 0.1;
 	right_motor_.pid.sample_time = QEI_RATE;
 
 	left_motor_ptr = &left_motor_;

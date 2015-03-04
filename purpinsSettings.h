@@ -32,104 +32,31 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *
- * Author: Gonçalo Cabrita on 20/02/2015
+ * Author: Goncalo Cabrita on 03/03/2015
  *********************************************************************/
 
-#ifndef __PURPINSDATATYPES
-#define __PURPINSDATATYPES
+#ifndef __PURPINSSETTINGS
+#define __PURPINSSETTINGS
 
-typedef struct _robot_speed
+#include <stdint.h>
+#include "purpinsDataTypes.h"
+
+#define PP_SETTING_ID 			(0x00)
+#define PP_SETTING_LEFT_PID 	(0x01)
+#define PP_SETTING_RIGHT_PID 	(PP_SETTING_LEFT_PID + sizeof(PIDGains)/4)
+#define PP_SETTING_SERVER_DATA 	(PP_SETTING_RIGHT_PID + sizeof(PIDGains)/4)
+#define PP_SETTING_NETWORK_DATA (PP_SETTING_SERVER_DATA + sizeof(Server)/4)
+#define PP_SETTING_COMM_TYPE	(PP_SETTING_NETWORK_DATA + sizeof(Network)/4)
+
+class purpinsSettings
 {
-	float linear;
-	float angular;
+public:
 
-} RobotSpeed;
+	purpinsSettings();
+	void save(uint8_t setting, void * data, uint32_t size);
+	void get(uint8_t setting, void * data, uint32_t size);
+};
 
-typedef struct _motor_speeds
-{
-	float left;
-	float right;
-
-} MotorSpeeds;
-
-typedef struct _motor_pwms
-{
-	int32_t left;
-	int32_t right;
-
-} MotorPWMs;
-
-typedef struct _pose
-{
-	float x;
-	float y;
-	float yaw;
-
-} Pose;
-
-typedef struct _encoder_pulses
-{
-	int32_t left;
-	int32_t right;
-
-} EncoderPulses;
-
-typedef struct _imu
-{
-	float orientation_x;
-	float orientation_y;
-	float orientation_z;
-	float orientation_w;
-
-	float angular_velocity_x;
-	float angular_velocity_y;
-	float angular_velocity_z;
-
-	float linear_acceleration_x;
-	float linear_acceleration_y;
-	float linear_acceleration_z;
-
-} IMU;
-
-typedef struct _ir_sensors
-{
-	float left;
-	float left_center;
-	float center;
-	float right_center;
-	float right;
-
-} IR;
-
-typedef struct _gas_sensor
-{
-	float concentration;
-
-} Gas;
-
-typedef struct _pid_gains
-{
-	float kp;
-	float ki;
-	float kd;
-
-} PIDGains;
-
-typedef struct _server
-{
-	uint8_t ip[4];
-	uint32_t port;
-
-} Server;
-
-typedef struct _network
-{
-	char ssid[32];
-	char key[32];
-	uint32_t security;
-
-} Network;
-
-#endif /* PURPINSDATATYPES_H_ */
+#endif //__PURPINSSETTINGS
 
 // EOF

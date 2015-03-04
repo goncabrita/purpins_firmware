@@ -1,9 +1,39 @@
-/*
- * main.cpp
+/*********************************************************************
  *
- *  Created on: Apr 10, 2014
- *      Author: bgouveia
- */
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2015, ISR University of Coimbra.
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of the ISR University of Coimbra nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Bruno Gouveia and Goncalo Cabrita on 10/04/2014
+ *********************************************************************/
 
 
 /*! \mainpage Purpins
@@ -51,6 +81,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <cstring>
 #include <inc/hw_ints.h>
 #include <inc/hw_memmap.h>
 #include <inc/hw_types.h>
@@ -64,12 +95,17 @@
 #include <driverlib/sysctl.h>
 #include <driverlib/pin_map.h>
 #include <driverlib/gpio.h>
-#include <cstring>
+#include "libs/linux-mpu9150/mpu9150/mpu9150.h"
+#include "utils/uartstdio.h"
 #include "uartComm.h"
+#include "wifiComm.h"
 #include "purpinsComm.h"
 #include "purpinsRobot.h"
-#include "libs/linux-mpu9150/mpu9150/mpu9150.h"
+#include "purpinsSettings.h"
 
+//
+// Firmware version
+//
 #define VERSION 11
 
 #define SYSTICKS_PER_SECOND 1000
@@ -78,9 +114,9 @@ unsigned long milliSec = 0;
 unsigned long ulClockMS = 0;
 
 //
-// Sensor pack and sensor streaming stuff
+// Robot ID global variable
 //
-#define SENSORS_PACK_SIZE 10
+extern uint32_t id = 0;
 
 extern "C"
 {
@@ -127,13 +163,40 @@ int main()
 	MAP_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 	MAP_IntMasterDisable();
 
-	SerialAbstract * serial = new SerialUARTImpl();
-	purpinsComm communication(*serial);
+	//
+	// Initialize the SW2 button
+	//
+	MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+	//
+	// Unlock PF0 so we can change it to a GPIO input
+	// Once we have enabled (unlocked) the commit register then re-lock it
+	// to prevent further changes.  PF0 is muxed with NMI thus a special case.
+	//
+	HWREG(GPIO_PORTF_BASE + GPIO_O_LOCK) = GPIO_LOCK_KEY;
+	HWREG(GPIO_PORTF_BASE + GPIO_O_CR) |= 0x01;
+	HWREG(GPIO_PORTF_BASE + GPIO_O_LOCK) = 0;
+	MAP_GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_0);
+	MAP_GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0, GPIO_STRENGTH_2MA , GPIO_PIN_TYPE_STD_WPU);
 
+	//
+	// Initialize the communication layer with a default UART setting
+	//
+	AbstractComm * comm = NULL;
+	AbstractComm * uart_comm = new UARTComm();
+	purpinsComm communication(uart_comm);
+
+	//
+	// Initialize the robot object
+	//
 	purpinsRobot purpins;
 
 	//
-	// MPU6050 configuration
+	// Initialize the EEPROM
+	//
+	purpinsSettings settings;
+
+	//
+	// Initialize the MPU6050-based IMU
 	//
 	mpudata_t mpu;
 	//unsigned long sample_rate = 10 ;
@@ -144,7 +207,6 @@ int main()
 	// Get the current processor clock frequency.
 	//
 	ulClockMS = MAP_SysCtlClockGet() / (3 * 1000);
-
 	//unsigned long loop_delay = (1000 / sample_rate) - 2;
 
 	//
@@ -156,6 +218,42 @@ int main()
 
 	MAP_IntMasterEnable();
 
+	//
+	// Load the settings from EEPROM
+	//
+	// Load the robot's ID
+	settings.get(PP_SETTING_ID, &id, sizeof(uint32_t));
+	// Load the motors' PID gains
+	settings.get(PP_SETTING_LEFT_PID, purpins.leftPIDGains(), sizeof(PIDGains));
+	settings.get(PP_SETTING_RIGHT_PID, purpins.rightPIDGains(), sizeof(PIDGains));
+	// Load the communication type
+	uint32_t comm_type;
+	settings.get(PP_SETTING_COMM_TYPE, &comm_type, sizeof(uint32_t));
+	// Holding SW2 at startup forces USB Comm
+	if(comm_type != PP_COMM_TYPE_USB && MAP_GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_0) == 1)
+	{
+		if(comm_type == PP_COMM_TYPE_CC3000)
+		{
+			comm = new WiFiComm();
+			// Load network and server settings
+			settings.get(PP_SETTING_NETWORK_DATA, (static_cast<WiFiComm*>(comm))->network(), sizeof(Network));
+			settings.get(PP_SETTING_SERVER_DATA, (static_cast<WiFiComm*>(comm))->server(), sizeof(Server));
+			// Set WiFiComm as the underlying communication layer
+			communication.setCommLayer(comm);
+		}
+		else if(comm_type == PP_COMM_TYPE_ESP8266)
+		{
+			// TODO
+		}
+		else if(comm_type == PP_COMM_TYPE_XBEE)
+		{
+			// TODO
+		}
+	}
+
+	//
+	// Communication variables and stuff
+	//
 	uint8_t sensors_pack[SENSORS_PACK_SIZE];
 	bool send_pack = false;
 	unsigned long sensor_streaming_millis = 0;
@@ -165,8 +263,14 @@ int main()
 	size_t data_size;
 	uint8_t action;
 
+	//
+	// Main loop, just managing communications
+	//
 	while(1)
 	{
+		//
+		// Check for a new action
+		//
 		action = communication.getMsg(data, data_size);
 
 		// If we got an action...
@@ -250,7 +354,7 @@ int main()
 					ok = false;
 					break;
 				}
-				for(int i=0 ; i<data_size ; i++)
+				for(unsigned int i=0 ; i<data_size ; i++)
 				{
 					if(data[i] < PP_ACTION_GET_ODOMETRY || data[i] > PP_ACTION_GET_GAS_SENSOR)
 					{
@@ -287,6 +391,14 @@ int main()
 			{
 				communication.sendAck(PP_ACTION_SET_NEIGHBORS_POSES);
 			}
+			else if(action == PP_ACTION_SET_ID)
+			{
+				// TODO: Finish this
+			}
+			else if(action == PP_ACTION_GET_ID)
+			{
+				// TODO: Finish this
+			}
 			else if(action == PP_ACTION_SET_PID_GAINS)
 			{
 				// TODO: Finish this
@@ -295,17 +407,58 @@ int main()
 			{
 				// TODO: Finish this
 			}
-			else if(action == PP_ACTION_SET_ODOMETRY_CALIBRATION)
+			else if(action == PP_ACTION_SET_SERVER_DATA)
 			{
 				// TODO: Finish this
 			}
-			else if(action == PP_ACTION_GET_ODOMETRY_CALIBRATION)
+			else if(action == PP_ACTION_GET_SERVER_DATA)
 			{
 				// TODO: Finish this
+			}
+			else if(action == PP_ACTION_SET_NETWORK_DATA)
+			{
+				// TODO: Finish this
+			}
+			else if(action == PP_ACTION_GET_NETWORK_DATA)
+			{
+				// TODO: Finish this
+			}
+			else if(action == PP_ACTION_SET_COMM_TYPE)
+			{
+				memcpy(&comm_type, data, sizeof(comm_type));
+				if(comm_type != communication.type())
+				{
+					if(comm_type == PP_COMM_TYPE_USB)
+					{
+						communication.setCommLayer(uart_comm);
+						if(comm != NULL) delete comm;
+					}
+					if(comm_type == PP_COMM_TYPE_CC3000)
+					{
+						if(comm != NULL) delete comm;
+						comm = new WiFiComm();
+						// Load network and server settings
+						settings.get(PP_SETTING_NETWORK_DATA, (static_cast<WiFiComm*>(comm))->network(), sizeof(Network));
+						settings.get(PP_SETTING_SERVER_DATA, (static_cast<WiFiComm*>(comm))->server(), sizeof(Server));
+						// Set WiFiComm as the underlying communication layer
+						communication.setCommLayer(comm);
+					}
+					else if(comm_type == PP_COMM_TYPE_ESP8266)
+					{
+						// TODO
+					}
+					else if(comm_type == PP_COMM_TYPE_XBEE)
+					{
+						// TODO
+					}
+				}
 			}
 
 		} // if(action > 0)
 
+		//
+		// Manage sensor streaming
+		//
 		unsigned long current_millis = millis();
 		if(send_pack || (sensor_streaming_millis > 0 && (current_millis - last_millis) >= sensor_streaming_millis))
 		{
@@ -364,7 +517,12 @@ int main()
 			communication.sendMsg(PP_ACTION_GET_SENSORS_PACK, (void*)(data), size);
 			last_millis = current_millis;
 			send_pack = false;
-		}
-	}
+
+		} // if(send_pack ...
+
+	} // while(1)
+
 	return 0;
 }
+
+// EOF

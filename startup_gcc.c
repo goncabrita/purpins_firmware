@@ -47,9 +47,8 @@ static void IntDefaultHandler(void);
 // External declarations for the interrupt handlers used by the application.
 //
 //*****************************************************************************
-//extern void Timer0IntHandler(void);
-//extern void Timer1IntHandler(void);
-
+extern void IntSpiGPIOHandler(void);
+extern void SpiIntHandler(void);
 extern void UARTStdioIntHandler(void);
 extern void SysTickHandler(void);
 
@@ -92,7 +91,7 @@ void (* const g_pfnVectors[])(void) =
 		SysTickHandler,                         // The SysTick handler
 		IntDefaultHandler,                      // GPIO Port A
 		IntDefaultHandler,                      // GPIO Port B
-		IntDefaultHandler,                      // GPIO Port C
+		IntSpiGPIOHandler,                      // GPIO Port C
 		IntDefaultHandler,                      // GPIO Port D
 		IntDefaultHandler,                      // GPIO Port E
 		UARTStdioIntHandler,                    // UART0 Rx and Tx
@@ -148,7 +147,7 @@ void (* const g_pfnVectors[])(void) =
 		IntDefaultHandler,                      // GPIO Port K
 		IntDefaultHandler,                      // GPIO Port L
 		IntDefaultHandler,                      // SSI2 Rx and Tx
-		IntDefaultHandler,                      // SSI3 Rx and Tx
+		SpiIntHandler,                      	// SSI3 Rx and Tx
 		IntDefaultHandler,                      // UART3 Rx and Tx
 		IntDefaultHandler,                      // UART4 Rx and Tx
 		IntDefaultHandler,                      // UART5 Rx and Tx

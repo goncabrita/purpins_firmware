@@ -58,26 +58,6 @@
 //*****************************************************************************
 void pio_init()
 {
-    //  Board Initialization start
-    //
-    //
-    // The FPU should be enabled because some compilers will use floating-
-    // point registers, even for non-floating-point code.  If the FPU is not
-    // enabled this will cause a fault.  This also ensures that floating-
-    // point operations could be added to this application and would work
-    // correctly and use the hardware floating-point unit.  Finally, lazy
-    // stacking is enabled for interrupt handlers.  This allows floating-
-    // point instructions to be used within interrupt handlers, but at the
-    // expense of extra stack usage.
-    //
-    FPUEnable();
-    FPULazyStackingEnable();
-
-    //
-    // Initialize the system clock.
-    //
-    initClk();
-
     //
     // Configure the system peripheral bus that IRQ & EN pin are mapped to.
     //
